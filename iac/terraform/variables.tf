@@ -1,5 +1,5 @@
 variable "profile" {
-  type    = string
+  type = string
 }
 
 variable "region" {
@@ -21,9 +21,12 @@ variable "aws_cli_execution_command" {
   default = "aws"
 }
 
-
 variable "log_retention_in_days" {
   type    = number
   default = 7
 }
 
+variable "stage_name" {
+  type    = string
+  default = "v1"
+}

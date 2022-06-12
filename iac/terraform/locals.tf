@@ -11,4 +11,3 @@ locals {
   current_region_short_name = lookup(local.region_short_names, data.aws_region.current.name)
   name_suffix               = "${var.environment}-${local.current_region_short_name}"
 }
-ª
