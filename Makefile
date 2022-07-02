@@ -10,8 +10,17 @@ package:
 	mkdir -p dist/app
 	zip -r -j dist/app/app.zip app/*
 
-init:
+# run it only once on new account
+init_terraform_infrastructure:
 	cd "iac/terraform-backend" && ./deploy.sh $(AWS_PROFILE) $(AWS_REGION)
+
+terraform_init:
+	cd "iac/terraform" && \
+	terraform init \
+		-backend-config="profile=$(AWS_PROFILE)" \
+		-backend-config="region=$(AWS_REGION)" \
+		-backend-config="bucket=vikto-terraform" \
+		-backend-config="key=vikto/$(ENV)/terraform.tfstate"
 
 terraform_plan:
 	cd "iac/terraform" && \
