@@ -8,7 +8,7 @@ resource "aws_lambda_function" "app_lambda_fn" {
   filename         = local.app_package_file
   role             = aws_iam_role.app_lambda_role.arn
   publish          = true
-  handler          = "dante_api.create_handler"
+  handler          = "connect.handler"
   source_code_hash = filebase64sha256(local.app_package_file)
   runtime          = "python3.9"
   environment {
