@@ -1,5 +1,6 @@
 locals {
   ws_api_name = "${local.name_prefix}-wsApi-${local.name_suffix}"
+  stage_name  = var.environment
 }
 resource "aws_apigatewayv2_api" "ws_api" {
   name                       = local.ws_api_name
@@ -36,7 +37,7 @@ resource "aws_apigatewayv2_integration" "websockets_connect_integration" {
   integration_method        = "POST"
   integration_uri           = aws_lambda_function.app_lambda_fn.invoke_arn
   passthrough_behavior      = "WHEN_NO_MATCH"
-#  credentials_arn           = aws_iam_role.app_lambda_role.arn
+  #  credentials_arn           = aws_iam_role.app_lambda_role.arn
   content_handling_strategy = "CONVERT_TO_TEXT"
 }
 
@@ -60,8 +61,8 @@ resource "aws_apigatewayv2_integration" "websockets_default_integration" {
   content_handling_strategy = "CONVERT_TO_TEXT"
 }
 
-resource "aws_lambda_permission" "apigw_invoke_lambda" {
-  statement_id  = "AllowExecutionFromAPIGateway"
+resource "aws_lambda_permission" "apigw_invoke_lambda_connect" {
+  statement_id  = "AllowConnectionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.app_lambda_fn.function_name
   principal     = "apigateway.amazonaws.com"
@@ -70,11 +71,20 @@ resource "aws_lambda_permission" "apigw_invoke_lambda" {
 
 resource "aws_apigatewayv2_stage" "stage" {
   api_id        = aws_apigatewayv2_api.ws_api.id
-  name          = var.environment
+  name          = local.stage_name
   deployment_id = aws_apigatewayv2_deployment.websocket_deploy.id
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.dante_api_loggroup.arn
+    format          = "$context.identity.sourceIp,$context.identity.caller,$context.identity.user,$context.requestTime,$context.eventType,$context.routeKey,$context.connectionId,$context.status,$context.requestId"
+  }
+
   default_route_settings {
-    throttling_rate_limit  = 10
-    throttling_burst_limit = 50
+    throttling_rate_limit    = 2
+    throttling_burst_limit   = 5
+    data_trace_enabled       = true
+    detailed_metrics_enabled = true
+    logging_level            = "INFO"
   }
 }
 
@@ -96,4 +106,12 @@ resource "aws_apigatewayv2_deployment" "websocket_deploy" {
       aws_apigatewayv2_route.default
     ]))
   }
+}
+
+resource "aws_cloudwatch_log_group" "dante_api_loggroup" {
+  name              = "/aws/apigateway/${aws_apigatewayv2_api.ws_api.id}/${local.stage_name}"
+  retention_in_days = var.log_retention_in_days
+  tags              = merge(local.tags, {
+    Name = "${local.ws_api_name}_logs"
+  })
 }

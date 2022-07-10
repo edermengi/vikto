@@ -35,5 +35,5 @@ terraform_apply:
 	cd "iac/terraform" && \
 	terraform apply $(TERRAFORM_LOCAL)
 
-deploy: package terraform_plan terraform_apply
+deploy: package terraform_init terraform_plan terraform_apply
 
