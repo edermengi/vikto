@@ -1,16 +1,16 @@
 locals {
   app_lambda_fn_name = "${local.name_prefix}-app-${local.name_suffix}"
-  app_package_file   = "../../dist/app/app.zip"
+  app_package_file   = "../../dist/app.zip"
 }
 
 resource "aws_lambda_function" "app_lambda_fn" {
   function_name    = local.app_lambda_fn_name
   filename         = local.app_package_file
   role             = aws_iam_role.app_lambda_role.arn
-  publish          = true
   handler          = "connect.handler"
   source_code_hash = filebase64sha256(local.app_package_file)
   runtime          = "python3.9"
+
   environment {
     variables = {
       CONTENT_BUCKET = "todo"

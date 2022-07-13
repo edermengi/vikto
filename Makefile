@@ -4,11 +4,13 @@ ENV := dev
 TERRAFORM_LOCAL = .terraform/local.plan
 
 clean:
-	rm -rf dist/app
+	rm -rf dist
 
 package:
 	mkdir -p dist/app
-	zip -r -j dist/app/app.zip app/*
+	pip install -r app/requirements.txt --target dist/app
+	cp -r app/* dist/app/
+	cd dist/app && zip -r ../app.zip .
 
 # run it only once on new account
 init_terraform_infrastructure:
@@ -35,5 +37,5 @@ terraform_apply:
 	cd "iac/terraform" && \
 	terraform apply $(TERRAFORM_LOCAL)
 
-deploy: package terraform_init terraform_plan terraform_apply
+deploy: clean package terraform_init terraform_plan terraform_apply
 
