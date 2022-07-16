@@ -26,9 +26,22 @@ resource "aws_apigatewayv2_route" "disconnect" {
 }
 
 resource "aws_apigatewayv2_route" "default" {
-  api_id    = aws_apigatewayv2_api.ws_api.id
-  route_key = "$default"
-  target    = "integrations/${aws_apigatewayv2_integration.websockets_default_integration.id}"
+  api_id                     = aws_apigatewayv2_api.ws_api.id
+  route_key                  = "$default"
+  target                     = "integrations/${aws_apigatewayv2_integration.websockets_default_integration.id}"
+  model_selection_expression = "\\$default"
+
+  request_models = {
+    "$default" = aws_apigatewayv2_model.default.name
+  }
+}
+
+resource "aws_apigatewayv2_model" "default" {
+  api_id       = aws_apigatewayv2_api.ws_api.id
+  content_type = "application/json"
+  name         = "default"
+
+  schema = file("${path.module}/templates/ws_api_models.json")
 }
 
 resource "aws_apigatewayv2_integration" "websockets_connect_integration" {

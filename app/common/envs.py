@@ -1,0 +1,6 @@
+import os
+
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+
+DYNAMODB_SESSION_TABLE_NAME = os.environ.get('DYNAMODB_SESSION_TABLE_NAME', None)
+DYNAMODB_GAME_TABLE_NAME = os.environ.get('DYNAMODB_GAME_TABLE_NAME', None)

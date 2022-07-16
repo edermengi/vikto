@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Default schema",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "$newGame",
+        "$chooseTheme",
+        "$ready",
+        "$exitGame"
+      ]
+    },
+    "data": {
+      "type": "object"
+    }
+  }
+}
