@@ -17,6 +17,7 @@ class UserSession:
     connectedAt: str
     entity: str = Entities.SESSION
     active: bool = True
+    userName: str = None
 
 
 def _dynamodb(dynamodb=None):
@@ -43,5 +44,15 @@ def close_session(connection_id: str):
         ExpressionAttributeValues={
             ':active': False,
             ':disconnectedAt': datetime.datetime.now().isoformat()
+        }
+    )
+
+
+def update_name(connection_id: str, name: str):
+    _session_table().update_item(
+        Key={'connectionId': connection_id, 'entity': Entities.SESSION},
+        UpdateExpression='set userName = :nm',
+        ExpressionAttributeValues={
+            ':nm': name
         }
     )

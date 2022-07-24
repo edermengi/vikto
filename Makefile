@@ -37,5 +37,15 @@ terraform_apply:
 	cd "iac/terraform" && \
 	terraform apply $(TERRAFORM_LOCAL)
 
+terraform_destroy:
+	cd "iac/terraform" && \
+	terraform destroy \
+		-var-file "./env/$(ENV)-eu-west-1.tfvars" \
+		-var "environment=$(ENV)" \
+		-var "region=$(AWS_REGION)" \
+		-var "profile=$(AWS_PROFILE)" \
+
 deploy: clean package terraform_init terraform_plan terraform_apply
+
+destroy: clean package terraform_init terraform_plan terraform_destroy
 

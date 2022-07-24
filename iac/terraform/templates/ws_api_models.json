@@ -4,13 +4,7 @@
   "type": "object",
   "properties": {
     "action": {
-      "type": "string",
-      "enum": [
-        "$newGame",
-        "$chooseTheme",
-        "$ready",
-        "$exitGame"
-      ]
+      "type": "string"
     },
     "data": {
       "type": "object"

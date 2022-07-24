@@ -104,9 +104,9 @@ resource "aws_apigatewayv2_stage" "stage" {
 resource "aws_apigatewayv2_deployment" "websocket_deploy" {
   api_id = aws_apigatewayv2_api.ws_api.id
 
-  lifecycle {
-    create_before_destroy = true
-  }
+    lifecycle {
+      create_before_destroy = true
+    }
 
   triggers = {
     redeployment = sha1(jsonencode([

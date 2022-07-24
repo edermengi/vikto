@@ -1,4 +1,4 @@
-from common.model import WsApiRequest
+from common.model import WsApiRequest, Actions
 from storage import db
 
 
@@ -12,6 +12,13 @@ def handler(event, context):
         db.close_session(req.connection_id)
         return {'statusCode': 200, 'body': 'Disconnected.'}
     elif req.route_key == '$default':
-        return {'statusCode': 200, 'body': 'Default'}
+        return dispatch(req)
     else:
         raise Exception(f'Unexpected route of {req.route_key}')
+
+
+def dispatch(req: WsApiRequest):
+    if req.action is Actions.UPDATE_NAME:
+        db.update_name(req.connection_id, req.req_update_name.name)
+
+    return {'statusCode': 200}
