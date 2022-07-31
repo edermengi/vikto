@@ -1,24 +1,27 @@
-from common.model import WsApiRequest, Actions
-from storage import db
+from dataclasses import asdict
+
+from common.model import parse_ws_request, ConnectRequest, DisconnectRequest, UpdateUserRequest, \
+    NewGameRequest, WsApiResponse, ApiResponse, WsApiBody
+from service import user, game
 
 
 def handler(event, context):
-    req = WsApiRequest.parse(event)
+    req = parse_ws_request(event)
     print(req)
-    if req.route_key == '$connect':
-        db.create_session(req.connection_id, req.source_ip, req.connected_at)
-        return {'statusCode': 200, 'body': 'Connected.'}
-    elif req.route_key == '$disconnect':
-        db.close_session(req.connection_id)
-        return {'statusCode': 200, 'body': 'Disconnected.'}
-    elif req.route_key == '$default':
-        return dispatch(req)
+    resp: ApiResponse
+
+    if isinstance(req, ConnectRequest):
+        resp = user.create_session(req)
+    elif isinstance(req, DisconnectRequest):
+        resp = user.close_session(req)
+    elif isinstance(req, UpdateUserRequest):
+        resp = user.update_user(req)
+    elif isinstance(req, NewGameRequest):
+        resp = game.new_game(req)
     else:
-        raise Exception(f'Unexpected route of {req.route_key}')
+        raise Exception(f'Not implemented')
 
-
-def dispatch(req: WsApiRequest):
-    if req.action is Actions.UPDATE_NAME:
-        db.update_name(req.connection_id, req.req_update_name.name)
-
-    return {'statusCode': 200}
+    return WsApiResponse(
+        statusCode=200,
+        body=WsApiBody(action=req.action, data=resp)
+    ).json()

@@ -112,7 +112,7 @@ resource "aws_iam_policy" "dynamodb_access" {
             "dynamodb:GetItem",
             "dynamodb:UpdateItem",
           ],
-          "Resource" : [aws_dynamodb_table.session_table.arn, aws_dynamodb_table.session_table.arn]
+          "Resource" : [aws_dynamodb_table.session_table.arn, aws_dynamodb_table.game_table.arn]
           "Effect" : "Allow"
         }
       ]
