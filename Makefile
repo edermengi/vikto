@@ -12,6 +12,9 @@ package:
 	cp -r app/* dist/app/
 	cd dist/app && zip -r ../app.zip .
 
+test:
+	cd app && python -m unittest discover -v -s ./test -t .
+
 # run it only once on new account
 init_terraform_infrastructure:
 	cd "iac/terraform-backend" && ./deploy.sh $(AWS_PROFILE) $(AWS_REGION)
@@ -45,7 +48,7 @@ terraform_destroy:
 		-var "region=$(AWS_REGION)" \
 		-var "profile=$(AWS_PROFILE)" \
 
-deploy: clean package terraform_init terraform_plan terraform_apply
+deploy: test clean package terraform_init terraform_plan terraform_apply
 
 destroy: clean package terraform_init terraform_plan terraform_destroy
 

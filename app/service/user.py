@@ -7,7 +7,7 @@ def create_session(req: ConnectRequest):
 
 
 def close_session(req: DisconnectRequest):
-    db.close_session(req.connection_id)
+    db.delete_session(req.connection_id)
 
 
 def update_user(req: UpdateUserRequest):

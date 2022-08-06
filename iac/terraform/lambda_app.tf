@@ -16,6 +16,7 @@ resource "aws_lambda_function" "app_lambda_fn" {
       CONTENT_BUCKET              = "todo"
       DYNAMODB_SESSION_TABLE_NAME = aws_dynamodb_table.session_table.name
       DYNAMODB_GAME_TABLE_NAME    = aws_dynamodb_table.game_table.name
+      DYNAMODB_USER_TABLE_NAME    = aws_dynamodb_table.user_table.name
     }
   }
   tags = merge(local.tags, {

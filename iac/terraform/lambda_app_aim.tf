@@ -111,8 +111,13 @@ resource "aws_iam_policy" "dynamodb_access" {
             "dynamodb:PutItem",
             "dynamodb:GetItem",
             "dynamodb:UpdateItem",
+            "dynamodb:DeleteItem",
+            "dynamodb:Query",
           ],
-          "Resource" : [aws_dynamodb_table.session_table.arn, aws_dynamodb_table.game_table.arn]
+          "Resource" : [
+            aws_dynamodb_table.session_table.arn, aws_dynamodb_table.game_table.arn,
+            aws_dynamodb_table.user_table.arn
+          ]
           "Effect" : "Allow"
         }
       ]

@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 
 class Actions(str, Enum):
@@ -76,8 +77,16 @@ class WsApiResponse:
 
 
 @dataclass
+class Player:
+    userId: str
+    userName: str
+    score: float = 0.0
+
+
+@dataclass
 class NewGameResponse(ApiResponse):
     gameId: str
+    players: List[Player]
 
 
 def parse_ws_request(event):
