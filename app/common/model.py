@@ -14,6 +14,7 @@ class Actions(str, Enum):
     READY = "$ready",
     EXIT_GAME = "$exitGame",
     CHOOSE_THEME = "$chooseTheme"
+    GAME_STATE_NOTIFICATION = "$gameStateNotification"
 
 
 @dataclass
@@ -101,6 +102,12 @@ class JoinGameResponse(NewGameResponse):
     pass
 
 
+@dataclass()
+class GameStateResponse(ApiResponse):
+    gameId: str
+    players: List[Player]
+
+
 def parse_ws_request(event):
     print(event)
     rc = event['requestContext']
@@ -124,4 +131,3 @@ def parse_ws_request(event):
             return JoinGameRequest(**asdict(req), **req.data)
     else:
         raise Exception(f'Unexpected route {req.route_key} and action {req.action}')
-

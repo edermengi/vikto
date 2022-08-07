@@ -17,6 +17,7 @@ resource "aws_lambda_function" "app_lambda_fn" {
       DYNAMODB_SESSION_TABLE_NAME = aws_dynamodb_table.session_table.name
       DYNAMODB_GAME_TABLE_NAME    = aws_dynamodb_table.game_table.name
       DYNAMODB_USER_TABLE_NAME    = aws_dynamodb_table.user_table.name
+      WS_API_GATEWAY_URL          = "${replace(aws_apigatewayv2_api.ws_api.api_endpoint, "wss", "https")}/${local.stage_name}"
     }
   }
   tags = merge(local.tags, {
