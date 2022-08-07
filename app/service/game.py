@@ -1,7 +1,8 @@
 import secrets
 import string
 
-from common.model import NewGameRequest, NewGameResponse, Player
+from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse
+from service.mapper import map_player_entities
 from storage import db
 
 
@@ -15,8 +16,14 @@ def new_game(req: NewGameRequest) -> NewGameResponse:
     db.join_game(game_id, req.userId)
     player_entities = db.get_active_players(game_id)
 
-    return NewGameResponse(game_id, players=[
-        Player(userId=player_entity.userId,
-               userName=player_entity.userName)
-        for player_entity in player_entities
-    ])
+    return NewGameResponse(game_id, players=map_player_entities(player_entities))
+
+
+def join_game(req: JoinGameRequest) -> JoinGameResponse:
+    game_id = req.gameId
+    user_id = req.userId
+
+    db.join_game(game_id, user_id)
+    player_entities = db.get_active_players(game_id)
+
+    return JoinGameResponse(game_id, players=map_player_entities(player_entities))

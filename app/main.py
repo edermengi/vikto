@@ -1,7 +1,7 @@
 from dataclasses import asdict
 
 from common.model import parse_ws_request, ConnectRequest, DisconnectRequest, UpdateUserRequest, \
-    NewGameRequest, WsApiResponse, ApiResponse, WsApiBody
+    NewGameRequest, WsApiResponse, ApiResponse, WsApiBody, JoinGameRequest
 from service import user, game
 
 
@@ -18,6 +18,8 @@ def handler(event, context):
         resp = user.update_user(req)
     elif isinstance(req, NewGameRequest):
         resp = game.new_game(req)
+    elif isinstance(req, JoinGameRequest):
+        resp = game.join_game(req)
     else:
         raise Exception(f'Not implemented')
 

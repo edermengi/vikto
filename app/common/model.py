@@ -10,6 +10,7 @@ class Actions(str, Enum):
     DISCONNECT = '$disconnect'
     UPDATE_USER = '$updateUser'
     NEW_GAME = "$newGame"
+    JOIN_GAME = "$joinGame"
     READY = "$ready",
     EXIT_GAME = "$exitGame",
     CHOOSE_THEME = "$chooseTheme"
@@ -53,6 +54,12 @@ class NewGameRequest(WsApiRequest):
     userId: str
 
 
+@dataclass
+class JoinGameRequest(WsApiRequest):
+    userId: str
+    gameId: str
+
+
 @dataclass()
 class ApiResponse:
     pass
@@ -89,6 +96,11 @@ class NewGameResponse(ApiResponse):
     players: List[Player]
 
 
+@dataclass
+class JoinGameResponse(NewGameResponse):
+    pass
+
+
 def parse_ws_request(event):
     print(event)
     rc = event['requestContext']
@@ -108,11 +120,8 @@ def parse_ws_request(event):
             return UpdateUserRequest(**asdict(req), **req.data)
         elif req.action == Actions.NEW_GAME:
             return NewGameRequest(**asdict(req), **req.data)
+        elif req.action == Actions.JOIN_GAME:
+            return JoinGameRequest(**asdict(req), **req.data)
     else:
         raise Exception(f'Unexpected route {req.route_key} and action {req.action}')
 
-
-@dataclass
-class Game:
-    GameId: str
-    UserId: str
