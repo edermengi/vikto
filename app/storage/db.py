@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from typing import List
+from typing import List, Set
 
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
@@ -54,7 +54,7 @@ class UserEntity:
     userId: str
     userName: str
     lastActiveAt: str
-    connections: List[str] = None
+    connections: Set[str] = None
     entity: str = Entities.USER
     gameId: str = None
     ttl: int = util.ttl()
@@ -125,7 +125,7 @@ def update_user(connection_id: str, user_id: str, user_name: str):
     )
     try:
         _user_table().put_item(
-            Item=asdict(UserEntity(user_id, user_name, util.now_iso(), [connection_id])),
+            Item=asdict(UserEntity(user_id, user_name, util.now_iso(), {connection_id})),
             ConditionExpression=Attr('userId').not_exists()
         )
     except ClientError as e:
