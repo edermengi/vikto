@@ -17,6 +17,10 @@ resource "aws_s3_bucket_website_configuration" "web_bucket_website_configuration
     suffix = "index.html"
   }
 
+  error_document {
+    key = "index.html"
+  }
+
 }
 
 resource "aws_s3_bucket_policy" "allow_public_access" {
