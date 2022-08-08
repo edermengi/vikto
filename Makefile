@@ -30,7 +30,7 @@ terraform_init:
 terraform_plan:
 	cd "iac/terraform" && \
 	terraform plan \
-		-var-file "./env/$(ENV)-eu-west-1.tfvars" \
+		-var-file "./env/$(ENV)-$(AWS_REGION).tfvars" \
 		-var "environment=$(ENV)" \
 		-var "region=$(AWS_REGION)" \
 		-var "profile=$(AWS_PROFILE)" \
@@ -43,7 +43,7 @@ terraform_apply:
 terraform_destroy:
 	cd "iac/terraform" && \
 	terraform destroy \
-		-var-file "./env/$(ENV)-eu-west-1.tfvars" \
+		-var-file "./env/$(ENV)-$(AWS_REGION).tfvars" \
 		-var "environment=$(ENV)" \
 		-var "region=$(AWS_REGION)" \
 		-var "profile=$(AWS_PROFILE)" \
