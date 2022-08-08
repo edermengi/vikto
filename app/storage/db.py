@@ -172,6 +172,9 @@ def get_active_players(game_id: str) -> List[PlayerEntity]:
 
 
 def get_user_connections(user_ids: List[str]):
-    user_entities = [get_user(user_id) for user_id in user_ids]
-    connections = [connection for user_entity in user_entities if user_entity for connection in user_entity.connections]
+    connections = []
+    for user_id in user_ids:
+        user_entity = get_user(user_id)
+        if user_entity.connections:
+            connections += user_entity.connections
     return connections
