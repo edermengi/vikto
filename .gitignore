@@ -3,3 +3,4 @@
 .terraform.lock.hcl
 dist
 venv
+*.local
