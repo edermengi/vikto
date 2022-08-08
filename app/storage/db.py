@@ -104,6 +104,10 @@ def delete_session(connection_id: str):
     )
 
 
+def get_users(user_ids: List[str]) -> List[UserEntity]:
+    return [get_user(user_id) for user_id in user_ids]
+
+
 def get_user(user_id: str) -> UserEntity:
     response = _user_table().get_item(
         Key={'userId': user_id, 'entity': Entities.USER}

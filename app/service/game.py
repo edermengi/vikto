@@ -27,10 +27,10 @@ def join_game(req: JoinGameRequest) -> JoinGameResponse:
 
     db.join_game(game_id, user_id)
     player_entities = db.get_active_players(game_id)
-    players = map_player_entities(player_entities)
+    user_entities = db.get_users([pe.userId for pe in player_entities])
+    players = map_player_entities(player_entities, user_entities)
 
     notification = WsApiBody(Actions.GAME_STATE_NOTIFICATION, GameStateResponse(game_id, players))
-    connections = db.get_user_connections([player.userId for player in players])
-    broadcast.send_to_connections(notification, connections)
+    broadcast.send_to_users(notification, user_entities)
 
     return JoinGameResponse(game_id, players=players)

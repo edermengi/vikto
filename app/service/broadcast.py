@@ -6,21 +6,23 @@ import boto3
 
 from common import envs
 from common.model import WsApiBody
+from storage.db import UserEntity
 
 client = boto3.client('apigatewaymanagementapi', endpoint_url=envs.WS_API_GATEWAY_URL)
 
 
-def send_to_connections(message: WsApiBody, connections: List[str]):
-    if not connections:
-        return
-
+def send_to_users(message: WsApiBody, user_entities: List[UserEntity]):
     data = json.dumps(asdict(message))
-    for connection in connections:
-        try:
-            print(f'Sending to {connection}')
-            client.post_to_connection(
-                Data=data,
-                ConnectionId=connection
-            )
-        except Exception as e:
-            print(e)
+
+    for user_entity in user_entities:
+        if not user_entity.connections:
+            continue
+        for connection in user_entity.connections:
+            try:
+                print(f'Sending to {connection}')
+                client.post_to_connection(
+                    Data=data,
+                    ConnectionId=connection
+                )
+            except Exception as e:
+                print(e)

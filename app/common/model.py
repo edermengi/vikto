@@ -88,6 +88,7 @@ class WsApiResponse:
 class Player:
     userId: str
     userName: str
+    online: bool
     score: float = 0.0
 
 
