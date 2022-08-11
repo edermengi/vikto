@@ -17,8 +17,9 @@ def new_game(req: NewGameRequest) -> NewGameResponse:
     db.create_game(game_id, req.userId)
     db.join_game(game_id, req.userId)
     player_entities = db.get_active_players(game_id)
+    user_entities = db.get_users([pe.userId for pe in player_entities])
 
-    return NewGameResponse(game_id, players=map_player_entities(player_entities))
+    return NewGameResponse(game_id, players=map_player_entities(player_entities, user_entities))
 
 
 def join_game(req: JoinGameRequest) -> JoinGameResponse:
