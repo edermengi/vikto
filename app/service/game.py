@@ -1,10 +1,8 @@
 import secrets
 import string
 
-from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse, \
-    WsApiBody, Actions, GameStateResponse
+from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse
 from service import broadcast
-from service.mapper import map_player_entities
 from storage import db
 
 
@@ -16,10 +14,9 @@ def new_game(req: NewGameRequest) -> NewGameResponse:
     game_id = random_game_id()
     db.create_game(game_id, req.userId)
     db.join_game(game_id, req.userId)
-    player_entities = db.get_active_players(game_id)
-    user_entities = db.get_users([pe.userId for pe in player_entities])
+    broadcast.send_game_state(game_id)
 
-    return NewGameResponse(game_id, players=map_player_entities(player_entities, user_entities))
+    return NewGameResponse(game_id)
 
 
 def join_game(req: JoinGameRequest) -> JoinGameResponse:
@@ -27,11 +24,8 @@ def join_game(req: JoinGameRequest) -> JoinGameResponse:
     user_id = req.userId
 
     db.join_game(game_id, user_id)
-    player_entities = db.get_active_players(game_id)
-    user_entities = db.get_users([pe.userId for pe in player_entities])
-    players = map_player_entities(player_entities, user_entities)
+    broadcast.send_game_state(game_id)
 
-    notification = WsApiBody(Actions.GAME_STATE_NOTIFICATION, GameStateResponse(game_id, players))
-    broadcast.send_to_users(notification, user_entities)
+    return JoinGameResponse(game_id)
 
-    return JoinGameResponse(game_id, players=players)
+

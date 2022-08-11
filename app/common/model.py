@@ -95,7 +95,6 @@ class Player:
 @dataclass
 class NewGameResponse(ApiResponse):
     gameId: str
-    players: List[Player]
 
 
 @dataclass
@@ -107,6 +106,11 @@ class JoinGameResponse(NewGameResponse):
 class GameStateResponse(ApiResponse):
     gameId: str
     players: List[Player]
+
+
+class ApiError(Exception):
+    def __init__(self, message: str):
+        self.message = message
 
 
 def parse_ws_request(event):
