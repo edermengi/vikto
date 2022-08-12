@@ -14,6 +14,6 @@ def close_session(req: DisconnectRequest):
 
 
 def update_user(req: UpdateUserRequest):
-    user = db.update_user(req.connection_id, req.userId, req.userName)
+    user = db.update_user(req.connection_id, req.userId, req.userName, req.avatar)
     if user.gameId:
         broadcast.send_game_state(user.gameId)

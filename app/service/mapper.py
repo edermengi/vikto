@@ -11,6 +11,7 @@ def map_player_entities(player_entities: List[PlayerEntity], user_entities: List
         Player(
             userId=pe.userId,
             userName=users.get(pe.userId).userName,
+            avatar=users.get(pe.userId).avatar,
             online=len(users.get(pe.userId).connections or {}) > 0
         )
         for pe in player_entities

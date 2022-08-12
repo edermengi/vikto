@@ -48,6 +48,7 @@ class DisconnectRequest(WsApiRequest):
 class UpdateUserRequest(WsApiRequest):
     userId: str
     userName: str
+    avatar: str
 
 
 @dataclass
@@ -88,6 +89,7 @@ class WsApiResponse:
 class Player:
     userId: str
     userName: str
+    avatar: str
     online: bool
     score: float = 0.0
 

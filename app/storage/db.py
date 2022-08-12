@@ -53,6 +53,7 @@ class UserEntity:
     userId: str
     userName: str
     lastActiveAt: str
+    avatar: str = "1 13 5 3 0 1 8 4 2 10 3"
     connections: Set[str] = None
     entity: str = Entities.USER
     gameId: str = None
@@ -88,14 +89,15 @@ def create_session(connection_id: str, source_ip: str, connected_at: str):
     _session_table().put_item(Item=asdict(session))
 
 
-def delete_session(connection_id: str) -> UserEntity:
+def delete_session(connection_id: str, user_id=None) -> UserEntity:
     response = _session_table().delete_item(
         Key={'connectionId': connection_id, 'entity': Entities.SESSION},
         ReturnValues='ALL_OLD'
     )
-    deleted_session = SessionEntity(**response['Attributes'])
+    if not user_id and response.get('Attributes'):
+        user_id = response['Attributes']['userId']
     resp = _user_table().update_item(
-        Key={'userId': deleted_session.userId, 'entity': Entities.USER},
+        Key={'userId': user_id, 'entity': Entities.USER},
         UpdateExpression='DELETE connections :connection',
         ExpressionAttributeValues={
             ':connection': {connection_id}
@@ -119,10 +121,10 @@ def get_user(user_id: str) -> UserEntity:
         return UserEntity(**item)
 
 
-def update_user(connection_id: str, user_id: str, user_name: str) -> UserEntity:
+def update_user(connection_id: str, user_id: str, user_name: str, avatar: str) -> UserEntity:
     _session_table().update_item(
         Key={'connectionId': connection_id, 'entity': Entities.SESSION},
-        UpdateExpression='set userName = :nm, userId = :userId',
+        UpdateExpression='SET userName = :nm, userId = :userId',
         ExpressionAttributeValues={
             ':nm': user_name,
             ':userId': user_id
@@ -131,7 +133,7 @@ def update_user(connection_id: str, user_id: str, user_name: str) -> UserEntity:
     )
     try:
         resp = _user_table().put_item(
-            Item=asdict(UserEntity(user_id, user_name, util.now_iso(), {connection_id})),
+            Item=asdict(UserEntity(user_id, user_name, util.now_iso(), avatar, {connection_id})),
             ConditionExpression=Attr('userId').not_exists(),
             ReturnValues='ALL_OLD'
         )
@@ -140,10 +142,11 @@ def update_user(connection_id: str, user_id: str, user_name: str) -> UserEntity:
         if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
             resp = _user_table().update_item(
                 Key={'userId': user_id, 'entity': Entities.USER},
-                UpdateExpression='SET userName = :nm, lastActiveAt = :lastActiveAt '
+                UpdateExpression='SET userName = :nm, lastActiveAt = :lastActiveAt, avatar = :avatar '
                                  'ADD connections :connection',
                 ExpressionAttributeValues={
                     ':nm': user_name,
+                    ':avatar': avatar,
                     ':lastActiveAt': util.now_iso(),
                     ':connection': {connection_id}
                 },

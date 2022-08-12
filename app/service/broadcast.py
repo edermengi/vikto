@@ -28,6 +28,7 @@ def send_to_users(message: WsApiBody, user_entities: List[UserEntity]):
                 )
             except Exception as e:
                 print(e)
+                db.delete_session(connection, user_entity.userId)
 
 
 def send_game_state(game_id: str):

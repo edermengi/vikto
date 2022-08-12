@@ -10,6 +10,7 @@ resource "aws_lambda_function" "app_lambda_fn" {
   handler          = "main.handler"
   source_code_hash = filebase64sha256(local.app_package_file)
   runtime          = "python3.9"
+  timeout          = 10
 
   environment {
     variables = {
