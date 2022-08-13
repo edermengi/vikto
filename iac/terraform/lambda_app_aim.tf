@@ -122,7 +122,7 @@ resource "aws_iam_policy" "dynamodb_access" {
           ],
           "Resource" : [
             aws_dynamodb_table.session_table.arn, aws_dynamodb_table.game_table.arn,
-            aws_dynamodb_table.user_table.arn
+            aws_dynamodb_table.user_table.arn, aws_dynamodb_table.quiz_table.arn
           ]
           "Effect" : "Allow"
         }

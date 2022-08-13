@@ -2,6 +2,7 @@ locals {
   game_table_name    = "${local.name_prefix}-game-${var.environment}"
   session_table_name = "${local.name_prefix}-session-${var.environment}"
   user_table_name = "${local.name_prefix}-user-${var.environment}"
+  quiz_table_name = "${local.name_prefix}-quiz-${var.environment}"
 }
 
 resource "aws_dynamodb_table" "game_table" {
@@ -79,5 +80,26 @@ resource "aws_dynamodb_table" "user_table" {
 
   tags = merge(local.tags, {
     Name = local.user_table_name
+  })
+}
+
+resource "aws_dynamodb_table" "quiz_table" {
+  name         = local.quiz_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+  range_key    = "entity"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  attribute {
+    name = "entity"
+    type = "S"
+  }
+
+  tags = merge(local.tags, {
+    Name = local.quiz_table_name
   })
 }
