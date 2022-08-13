@@ -8,8 +8,9 @@ stateDiagram-v2
     ASK_TOPIC --> ASK_QUESTION: Players select topic
     ASK_QUESTION --> SHOW_ANSWER: Players select answer
     SHOW_ANSWER --> if_state
-    if_state --> [*]: if n == 0
+    if_state --> SHOW_WINNER: if n == 0
     if_state --> ASK_TOPIC : if n > 0
+    SHOW_WINNER --> [*]
     
 ```
 
