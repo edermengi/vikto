@@ -1,0 +1,19 @@
+SELECT DISTINCT ?workLabel ?publicationYear ?authorLabel ?authorCountryLabel {
+    ?author wdt:P106 wd:Q36180;
+            wdt:P800 ?work .
+    ?work wdt:P31 wd:Q7725634 .
+    ?work rdfs:label ?workLabel .
+    ?author rdfs:label ?authorLabel .
+    OPTIONAL {
+      ?work wdt:P577 ?publicationDate .
+      BIND(year(xsd:dateTime(?publicationDate)) as ?publicationYear)
+    }
+    OPTIONAL {
+        ?author wdt:P27 ?authorCountry .
+        ?authorCountry rdfs:label ?authorCountryLabel
+        FILTER (lang(?authorCountryLabel) = "ru")
+    }
+
+  FILTER (lang(?workLabel) = "ru")
+  FILTER (lang(?authorLabel) = "ru")
+} limit 10000
