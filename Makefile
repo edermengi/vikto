@@ -2,18 +2,25 @@ AWS_REGION := eu-west-1
 AWS_PROFILE := vikto
 ENV := dev
 TERRAFORM_LOCAL = .terraform/local.plan
-WS_API_PACKAGE_NAME=wsapi
+package_wsapi:P=wsapi
+package_broadcast:P=broadcast
 
 clean:
 	rm -rf dist
 
 package_wsapi:
-	mkdir -p dist/$(WS_API_PACKAGE_NAME)
-	pip install -r app/requirements.txt --target dist/app
-	cp -r app/common app/wsapi dist/$(WS_API_PACKAGE_NAME)/
-	cd dist/$(WS_API_PACKAGE_NAME) && zip -r ../$(WS_API_PACKAGE_NAME).zip . -x '*test*' '*pycache*'
+	mkdir -p dist/$P
+	pip install -r app/requirements.txt --target dist/$P
+	cp -r app/common app/$P dist/$P/
+	cd dist/$P && zip -r ../$P.zip . -x '*test*' '*pycache*'
 
-package: package_wsapi
+package_broadcast:
+	mkdir -p dist/$P
+	pip install -r app/requirements.txt --target dist/$P
+	cp -r app/common app/$P dist/$P/
+	cd dist/$P && zip -r ../$P.zip . -x '*test*' '*pycache*'
+
+package:  package_wsapi package_broadcast
 
 test:
 	cd app/common && python -m unittest discover -v -s ./test -t ..
