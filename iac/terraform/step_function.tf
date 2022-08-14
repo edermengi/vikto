@@ -12,7 +12,14 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
       "States" : {
         "WaitPlayersReady" : {
           "Type" : "Task",
-          "Resource" : aws_lambda_function.app_lambda_fn.arn
+          "Resource" : "arn:aws:states:::lambda:invoke.waitForTaskToken",
+          "Parameters" : {
+            "FunctionName": aws_lambda_function.flow_lambda_fn.function_name
+            "Payload" : {
+              "gameId" : "$.gameId",
+              "TaskToken.$" : "$$.Task.Token"
+            }
+          },
           "End" : true
         }
       }

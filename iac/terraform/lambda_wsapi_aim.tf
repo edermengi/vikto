@@ -64,6 +64,11 @@ resource "aws_iam_role_policy_attachment" "api_gateway_manage_policy_attachment"
   policy_arn = aws_iam_policy.api_gateway_manage_connections.arn
 }
 
+resource "aws_iam_role_policy_attachment" "wsapi_game_sf_invoke_policy_attachment" {
+  role       = aws_iam_role.app_lambda_role.name
+  policy_arn = aws_iam_policy.game_sf_invoke.arn
+}
+
 
 # POLICIES
 

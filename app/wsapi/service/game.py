@@ -2,7 +2,7 @@ import secrets
 import string
 
 from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse, ReadyRequest, ReadyResponse
-from wsapi.service import broadcast
+from wsapi.service import broadcast, sfn
 from common.storage import db
 
 
@@ -15,8 +15,9 @@ def new_game(req: NewGameRequest) -> NewGameResponse:
     db.create_game(game_id, req.userId)
     db.join_game(game_id, req.userId)
     broadcast.send_game_state(game_id)
+    sfn.start(game_id)
 
-    return NewGameResponse(game_id, False)
+    return NewGameResponse(game_id)
 
 
 def join_game(req: JoinGameRequest) -> JoinGameResponse:
@@ -26,7 +27,7 @@ def join_game(req: JoinGameRequest) -> JoinGameResponse:
     db.join_game(game_id, user_id)
     broadcast.send_game_state(game_id)
 
-    return JoinGameResponse(game_id, False)
+    return JoinGameResponse(game_id)
 
 
 def ready(req: ReadyRequest):

@@ -19,6 +19,7 @@ resource "aws_lambda_function" "app_lambda_fn" {
       DYNAMODB_GAME_TABLE_NAME    = aws_dynamodb_table.game_table.name
       DYNAMODB_USER_TABLE_NAME    = aws_dynamodb_table.user_table.name
       BROADCAST_LAMBDA_NAME       = aws_lambda_function.broadcast_lambda_fn.function_name
+      GAME_SFN_ARN                = aws_sfn_state_machine.sfn_state_machine.arn
     }
   }
   tags = merge(local.tags, {

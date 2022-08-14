@@ -4,6 +4,7 @@ ENV := dev
 TERRAFORM_LOCAL = .terraform/local.plan
 package_wsapi:P=wsapi
 package_broadcast:P=broadcast
+package_flow:P=flow
 
 clean:
 	rm -rf dist
@@ -20,7 +21,13 @@ package_broadcast:
 	cp -r app/common app/$P dist/$P/
 	cd dist/$P && zip -r ../$P.zip . -x '*test*' '*pycache*'
 
-package:  package_wsapi package_broadcast
+package_flow:
+	mkdir -p dist/$P
+	pip install -r app/requirements.txt --target dist/$P
+	cp -r app/common app/$P dist/$P/
+	cd dist/$P && zip -r ../$P.zip . -x '*test*' '*pycache*'
+
+package:  package_wsapi package_broadcast package_flow
 
 test:
 	cd app/common && python -m unittest discover -v -s ./test -t ..

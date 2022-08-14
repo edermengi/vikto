@@ -127,6 +127,11 @@ class GameStateBroadcastPayload:
     gameId: str
 
 
+@dataclass
+class StartGameStepFunctionPayload:
+    gameId: str
+
+
 class ApiError(Exception):
     def __init__(self, message: str):
         self.message = message
