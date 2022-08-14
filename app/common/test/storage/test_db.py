@@ -1,7 +1,7 @@
 import unittest
 from dataclasses import asdict
 
-from storage.db import PlayerEntity
+from common.storage.db import PlayerEntity
 
 
 class DbTestCase(unittest.TestCase):

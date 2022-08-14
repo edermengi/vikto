@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 from common.model import Player
-from storage.db import PlayerEntity, UserEntity
+from common.storage.db import PlayerEntity, UserEntity
 
 
 def map_player_entities(player_entities: List[PlayerEntity], user_entities: List[UserEntity]) -> List[Player]:

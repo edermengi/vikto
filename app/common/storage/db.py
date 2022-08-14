@@ -6,7 +6,7 @@ from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
 from common import envs
-from storage import util
+from common.storage import util
 
 
 class Entities:

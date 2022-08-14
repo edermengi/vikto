@@ -2,18 +2,21 @@ AWS_REGION := eu-west-1
 AWS_PROFILE := vikto
 ENV := dev
 TERRAFORM_LOCAL = .terraform/local.plan
+WS_API_PACKAGE_NAME=wsapi
 
 clean:
 	rm -rf dist
 
-package:
-	mkdir -p dist/app
+package_wsapi:
+	mkdir -p dist/$(WS_API_PACKAGE_NAME)
 	pip install -r app/requirements.txt --target dist/app
-	cp -r app/* dist/app/
-	cd dist/app && zip -r ../app.zip .
+	cp -r app/common app/wsapi dist/$(WS_API_PACKAGE_NAME)/
+	cd dist/$(WS_API_PACKAGE_NAME) && zip -r ../$(WS_API_PACKAGE_NAME).zip . -x '*test*' '*pycache*'
+
+package: package_wsapi
 
 test:
-	cd app && python -m unittest discover -v -s ./test -t .
+	cd app/common && python -m unittest discover -v -s ./test -t ..
 
 # run it only once on new account
 init_terraform_infrastructure:

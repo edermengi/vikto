@@ -1,6 +1,6 @@
 from common.model import ConnectRequest, DisconnectRequest, UpdateUserRequest
-from service import broadcast
-from storage import db
+from wsapi.service import broadcast
+from common.storage import db
 
 
 def create_session(req: ConnectRequest):

@@ -6,9 +6,9 @@ import boto3
 
 from common import envs
 from common.model import WsApiBody, Actions, GameStateResponse
-from service.mapper import map_player_entities
-from storage import db
-from storage.db import UserEntity
+from wsapi.service.mapper import map_player_entities
+from common.storage import db
+from common.storage.db import UserEntity
 
 client = boto3.client('apigatewaymanagementapi', endpoint_url=envs.WS_API_GATEWAY_URL)
 

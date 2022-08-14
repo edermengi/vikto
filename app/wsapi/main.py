@@ -1,6 +1,6 @@
 from common.model import parse_ws_request, ConnectRequest, DisconnectRequest, UpdateUserRequest, \
     NewGameRequest, WsApiResponse, ApiResponse, WsApiBody, JoinGameRequest
-from service import user, game
+from wsapi.service import user, game
 
 
 def handler(event, context):

@@ -2,8 +2,8 @@ import secrets
 import string
 
 from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse
-from service import broadcast
-from storage import db
+from wsapi.service import broadcast
+from common.storage import db
 
 
 def random_game_id():
@@ -27,5 +27,3 @@ def join_game(req: JoinGameRequest) -> JoinGameResponse:
     broadcast.send_game_state(game_id)
 
     return JoinGameResponse(game_id)
-
-
