@@ -1,9 +1,10 @@
 locals {
-  app_lambda_role_name          = "${local.name_prefix}-appLambdaRole-${local.name_suffix}"
-  app_lambda_invoke_policy_name = "${local.name_prefix}-appLambdaInvokePolicy-${local.name_suffix}"
-  logging_policy_name           = "${local.name_prefix}-loggingPolicy-${local.name_suffix}"
-  dynamodb_policy_name          = "${local.name_prefix}-dynamoDbPolicy-${local.name_suffix}"
-  apigw_manage_policy_name      = "${local.name_prefix}-apigwManagePolicy-${local.name_suffix}"
+  app_lambda_role_name                = "${local.name_prefix}-appLambdaRole-${local.name_suffix}"
+  app_lambda_invoke_policy_name       = "${local.name_prefix}-appLambdaInvokePolicy-${local.name_suffix}"
+  broadcast_lambda_invoke_policy_name = "${local.name_prefix}-broadcastLambdaInvokePolicy-${local.name_suffix}"
+  logging_policy_name                 = "${local.name_prefix}-loggingPolicy-${local.name_suffix}"
+  dynamodb_policy_name                = "${local.name_prefix}-dynamoDbPolicy-${local.name_suffix}"
+  apigw_manage_policy_name            = "${local.name_prefix}-apigwManagePolicy-${local.name_suffix}"
 }
 
 resource "aws_iam_role" "app_lambda_role" {
@@ -46,6 +47,11 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 resource "aws_iam_role_policy_attachment" "lambda_invoke_policy_attachment" {
   role       = aws_iam_role.app_lambda_role.name
   policy_arn = aws_iam_policy.app_lambda_invoke.arn
+}
+
+resource "aws_iam_role_policy_attachment" "broadcast_lambda_invoke_policy_attachment" {
+  role       = aws_iam_role.app_lambda_role.name
+  policy_arn = aws_iam_policy.broadcast_lambda_invoke.arn
 }
 
 resource "aws_iam_role_policy_attachment" "dynamodb_policy_attachment" {
@@ -97,6 +103,26 @@ resource "aws_iam_policy" "app_lambda_invoke" {
             "lambda:InvokeFunction"
           ],
           "Resource" : aws_lambda_function.app_lambda_fn.arn,
+          "Effect" : "Allow"
+        }
+      ]
+    })
+}
+
+resource "aws_iam_policy" "broadcast_lambda_invoke" {
+  name        = local.broadcast_lambda_invoke_policy_name
+  path        = "/"
+  description = "IAM policy for invoking broadcast lambda"
+
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Action" : [
+            "lambda:InvokeFunction"
+          ],
+          "Resource" : aws_lambda_function.broadcast_lambda_fn.arn,
           "Effect" : "Allow"
         }
       ]

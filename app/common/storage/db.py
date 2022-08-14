@@ -1,3 +1,4 @@
+import functools
 from dataclasses import dataclass, asdict
 from typing import List, Set
 
@@ -60,28 +61,28 @@ class UserEntity:
     ttl: int = util.ttl()
 
 
-def _dynamodb(dynamodb=None):
-    if not dynamodb:
-        dynamodb = boto3.resource('dynamodb')
-    return dynamodb
+@functools.cache
+def _dynamodb(_=''):
+    print('Dynamodb client created')
+    return boto3.resource('dynamodb')
 
 
-def _session_table(session_table=None):
-    if not session_table:
-        session_table = _dynamodb().Table(envs.DYNAMODB_SESSION_TABLE_NAME)
-    return session_table
+@functools.cache
+def _session_table(_=''):
+    print('Session client created')
+    return _dynamodb().Table(envs.DYNAMODB_SESSION_TABLE_NAME)
 
 
-def _game_table(game_table=None):
-    if not game_table:
-        game_table = _dynamodb().Table(envs.DYNAMODB_GAME_TABLE_NAME)
-    return game_table
+@functools.cache
+def _game_table(_=''):
+    print('Game client created')
+    return _dynamodb().Table(envs.DYNAMODB_GAME_TABLE_NAME)
 
 
-def _user_table(user_table=None):
-    if not user_table:
-        user_table = _dynamodb().Table(envs.DYNAMODB_USER_TABLE_NAME)
-    return user_table
+@functools.cache
+def _user_table(_=''):
+    print('User client created')
+    return _dynamodb().Table(envs.DYNAMODB_USER_TABLE_NAME)
 
 
 def create_session(connection_id: str, source_ip: str, connected_at: str):
@@ -116,7 +117,6 @@ def get_user(user_id: str) -> UserEntity:
         Key={'userId': user_id, 'entity': Entities.USER}
     )
     item = response.get('Item')
-    print(f'Item: {item}')
     if item:
         return UserEntity(**item)
 

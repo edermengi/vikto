@@ -110,6 +110,11 @@ class GameStateResponse(ApiResponse):
     players: List[Player]
 
 
+@dataclass
+class GameStateBroadcastPayload:
+    gameId: str
+
+
 class ApiError(Exception):
     def __init__(self, message: str):
         self.message = message

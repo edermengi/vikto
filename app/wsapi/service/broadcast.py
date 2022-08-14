@@ -1,44 +1,16 @@
 import json
 from dataclasses import asdict
-from typing import List
 
 import boto3
 
 from common import envs
-from common.model import WsApiBody, Actions, GameStateResponse
-from wsapi.service.mapper import map_player_entities
-from common.storage import db
-from common.storage.db import UserEntity
+from common.model import GameStateBroadcastPayload
 
-client = boto3.client('apigatewaymanagementapi', endpoint_url=envs.WS_API_GATEWAY_URL)
-
-
-def send_to_users(message: WsApiBody, user_entities: List[UserEntity]):
-    data = json.dumps(asdict(message))
-
-    for user_entity in user_entities:
-        if not user_entity.connections:
-            continue
-        for connection in user_entity.connections:
-            try:
-                print(f'Sending to {connection}')
-                client.post_to_connection(
-                    Data=data,
-                    ConnectionId=connection
-                )
-            except Exception as e:
-                print(e)
-                db.delete_session(connection, user_entity.userId)
+lambda_client = boto3.client('lambda')
 
 
 def send_game_state(game_id: str):
-    players, user_entities = _get_players(game_id)
-    notification = WsApiBody(Actions.GAME_STATE_NOTIFICATION, GameStateResponse(game_id, players))
-    send_to_users(notification, user_entities)
-
-
-def _get_players(game_id):
-    player_entities = db.get_active_players(game_id)
-    user_entities = db.get_users([pe.userId for pe in player_entities])
-    players = map_player_entities(player_entities, user_entities)
-    return players, user_entities
+    lambda_client.invoke_async(
+        FunctionName=envs.BROADCAST_LAMBDA_NAME,
+        InvokeArgs=json.dumps(asdict(GameStateBroadcastPayload(game_id)))
+    )
