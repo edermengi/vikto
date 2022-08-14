@@ -16,6 +16,10 @@ class Entities:
     PLAYER = 'PLAYER'
     USER = 'USER'
 
+    @staticmethod
+    def player(user_id: str):
+        return f'{Entities.PLAYER}#{user_id}'
+
 
 @dataclass
 class SessionEntity:
@@ -45,6 +49,7 @@ class PlayerEntity:
     userId: str
     joinedAt: str
     entity: str
+    ready: bool = False
     endedAt: str = None
     ttl: int = util.ttl()
 
@@ -165,7 +170,7 @@ def create_game(game_id: str, user_id: str):
     )
 
 
-def join_game(game_id: str, user_id: str):
+def join_game(game_id: str, user_id: str) -> PlayerEntity:
     _user_table().update_item(
         Key={'userId': user_id, 'entity': Entities.USER},
         UpdateExpression='SET gameId = :gameId',
@@ -176,7 +181,7 @@ def join_game(game_id: str, user_id: str):
     player = PlayerEntity(gameId=game_id,
                           userId=user_id,
                           joinedAt=util.now_iso(),
-                          entity=f'{Entities.PLAYER}#{user_id}')
+                          entity=Entities.player(user_id))
 
     _game_table().put_item(
         Item=asdict(player)
@@ -198,3 +203,14 @@ def get_user_connections(user_ids: List[str]):
         if user_entity.connections:
             connections += user_entity.connections
     return connections
+
+
+def update_ready_status(game_id: str, user_id: str):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.player(user_id)},
+        UpdateExpression='SET ready = :ready',
+        ExpressionAttributeValues={
+            ':ready': True
+        },
+        ReturnValues='ALL_NEW'
+    )

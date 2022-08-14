@@ -62,6 +62,12 @@ class JoinGameRequest(WsApiRequest):
     gameId: str
 
 
+@dataclass
+class ReadyRequest(WsApiRequest):
+    userId: str
+    gameId: str
+
+
 @dataclass()
 class ApiResponse:
     pass
@@ -91,6 +97,7 @@ class Player:
     userName: str
     avatar: str
     online: bool
+    ready: bool
     score: float = 0.0
 
 
@@ -101,6 +108,11 @@ class NewGameResponse(ApiResponse):
 
 @dataclass
 class JoinGameResponse(NewGameResponse):
+    pass
+
+
+@dataclass
+class ReadyResponse(ApiResponse):
     pass
 
 
@@ -141,5 +153,7 @@ def parse_ws_request(event):
             return NewGameRequest(**asdict(req), **req.data)
         elif req.action == Actions.JOIN_GAME:
             return JoinGameRequest(**asdict(req), **req.data)
+        elif req.action == Actions.READY:
+            return ReadyRequest(**asdict(req), **req.data)
     else:
         raise Exception(f'Unexpected route {req.route_key} and action {req.action}')
