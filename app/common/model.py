@@ -138,8 +138,8 @@ class SfPayload:
 
 
 @dataclass
-class StartGamePayload(SfPayload):
-    event: ClassVar[str] = "startGame"
+class WaitPlayersReady(SfPayload):
+    event: ClassVar[str] = "waitPlayersReady"
     gameId: str
     taskToken: str
 

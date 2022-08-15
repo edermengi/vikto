@@ -40,6 +40,7 @@ class GameEntity:
     startedAt: str
     entity: str = Entities.GAME
     endedAt: str = None
+    taskToken: str = None
     ttl: int = util.ttl()
 
 
@@ -170,7 +171,7 @@ def create_game(game_id: str, user_id: str):
     )
 
 
-def join_game(game_id: str, user_id: str) -> PlayerEntity:
+def join_game(game_id: str, user_id: str):
     _user_table().update_item(
         Key={'userId': user_id, 'entity': Entities.USER},
         UpdateExpression='SET gameId = :gameId',
@@ -205,8 +206,8 @@ def get_user_connections(user_ids: List[str]):
     return connections
 
 
-def update_ready_status(game_id: str, user_id: str):
-    _game_table().update_item(
+def update_ready_status(game_id: str, user_id: str) -> PlayerEntity:
+    response = _game_table().update_item(
         Key={'gameId': game_id, 'entity': Entities.player(user_id)},
         UpdateExpression='SET ready = :ready',
         ExpressionAttributeValues={
@@ -214,3 +215,23 @@ def update_ready_status(game_id: str, user_id: str):
         },
         ReturnValues='ALL_NEW'
     )
+    return PlayerEntity(**response['Attributes'])
+
+
+def update_task_token(game_id, task_token):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.GAME},
+        UpdateExpression='SET taskToken = :taskToken',
+        ExpressionAttributeValues={
+            ':taskToken': task_token
+        }
+    )
+
+
+def get_game(game_id: str) -> GameEntity:
+    response = _game_table().get_item(
+        Key={'gameId': game_id, 'entity': Entities.GAME}
+    )
+    item = response.get('Item')
+    if item:
+        return GameEntity(**item)

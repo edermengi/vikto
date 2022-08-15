@@ -19,3 +19,10 @@ def start(game_id: str):
         name=exec_name,
         input=message
     )
+
+
+def send_task_success(task_token: str):
+    client.send_task_success(
+        taskToken=task_token,
+        output='{}'
+    )

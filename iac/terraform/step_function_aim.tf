@@ -73,7 +73,8 @@ resource "aws_iam_policy" "game_sf_invoke" {
       "Statement" : [
         {
           "Action" : [
-            "states:StartExecution"
+            "states:StartExecution",
+            "states:SendTaskSuccess"
           ],
           "Resource" : aws_sfn_state_machine.sfn_state_machine.arn,
           "Effect" : "Allow"

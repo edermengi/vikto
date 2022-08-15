@@ -31,6 +31,14 @@ def join_game(req: JoinGameRequest) -> JoinGameResponse:
 
 
 def ready(req: ReadyRequest):
-    db.update_ready_status(req.gameId, req.userId)
-    broadcast.send_game_state(req.gameId)
+    game_id = req.gameId
+    user_id = req.userId
+
+    db.update_ready_status(game_id, user_id)
+    players = db.get_active_players(game_id)
+    ready_no = sum(p.ready for p in players)
+    if ready_no >= min(2, len(players)):
+        game = db.get_game(game_id)
+        sfn.send_task_success(game.taskToken)
+    broadcast.send_game_state(game_id)
     return ReadyResponse()
