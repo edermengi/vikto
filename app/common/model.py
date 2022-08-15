@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
-from typing import List
+from typing import List, ClassVar
 
 
 class Actions(str, Enum):
@@ -128,8 +128,20 @@ class GameStateBroadcastPayload:
 
 
 @dataclass
-class StartGameStepFunctionPayload:
+class GameStepFunctionInput:
     gameId: str
+
+
+@dataclass
+class SfPayload:
+    event: ClassVar[str]
+
+
+@dataclass
+class StartGamePayload(SfPayload):
+    event: ClassVar[str] = "startGame"
+    gameId: str
+    taskToken: str
 
 
 class ApiError(Exception):
@@ -162,3 +174,15 @@ def parse_ws_request(event):
             return ReadyRequest(**asdict(req), **req.data)
     else:
         raise Exception(f'Unexpected route {req.route_key} and action {req.action}')
+
+
+def parse_sf_payload(payload: dict):
+    event = payload.get('event')
+    if event is None:
+        raise ValueError(f'Unable to parse payload. There is no event property in {payload}')
+
+    for payload_cls in SfPayload.__subclasses__():
+        if payload_cls.event == event:
+            return payload_cls(**{k: payload[k] for k in payload if k != 'event'})
+
+    raise ValueError(f'Unable to parse payload. There is no corresponding class for event [{event}]')

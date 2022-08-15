@@ -16,8 +16,9 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
           "Parameters" : {
             "FunctionName": aws_lambda_function.flow_lambda_fn.function_name
             "Payload" : {
-              "gameId" : "$.gameId",
-              "TaskToken.$" : "$$.Task.Token"
+              "event": "startGame",
+              "gameId.$" : "$.gameId",
+              "taskToken.$" : "$$.Task.Token"
             }
           },
           "End" : true
