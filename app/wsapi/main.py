@@ -1,6 +1,6 @@
 from common import log
 from common.model import parse_ws_request, ConnectRequest, DisconnectRequest, UpdateUserRequest, \
-    NewGameRequest, WsApiResponse, ApiResponse, WsApiBody, JoinGameRequest, ReadyRequest
+    NewGameRequest, WsApiResponse, ApiResponse, WsApiBody, JoinGameRequest, ReadyRequest, AnswerRequest
 from wsapi.service import user, game
 
 
@@ -22,6 +22,8 @@ def handler(event, context):
         resp = game.join_game(req)
     elif isinstance(req, ReadyRequest):
         resp = game.ready(req)
+    elif isinstance(req, AnswerRequest):
+        resp = game.answer(req)
     else:
         raise Exception(f'Not implemented')
 

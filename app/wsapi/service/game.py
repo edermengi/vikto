@@ -1,10 +1,11 @@
 import secrets
 import string
 
-from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse, ReadyRequest, ReadyResponse
+from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse, ReadyRequest, \
+    ReadyResponse, AnswerRequest
 from wsapi.service import sfn
 from common.service import broadcast
-from common.storage import db
+from common.storage import db, util
 
 
 def random_game_id():
@@ -44,3 +45,16 @@ def ready(req: ReadyRequest):
         db.update_task_token(game_id, None)
     broadcast.send_game_state(game_id)
     return ReadyResponse()
+
+
+def answer(req: AnswerRequest):
+    game_id = req.gameId
+    user_id = req.userId
+    answer_ = req.answer
+
+    db.update_player_answer(game_id, user_id, answer_, util.now_timestamp())
+    players = db.get_active_players(game_id)
+    all_answered = all([p.answer is not None for p in players])
+    if all_answered:
+        game = db.get_game(game_id)
+        sfn.send_task_success(game.taskToken)

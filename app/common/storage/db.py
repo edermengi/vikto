@@ -1,5 +1,6 @@
 import functools
 from dataclasses import dataclass, asdict
+from decimal import Decimal
 from enum import Enum
 from typing import List, Set
 
@@ -83,6 +84,9 @@ class PlayerEntity:
     entity: str
     ready: bool = False
     endedAt: str = None
+    score: Decimal = Decimal(0.0)
+    answer: str = None
+    answerTime: int = None
     ttl: int = util.ttl()
 
 
@@ -260,6 +264,15 @@ def get_active_players(game_id: str) -> List[PlayerEntity]:
     return [PlayerEntity(**item) for item in response['Items']]
 
 
+def get_active_player(game_id: str, user_id: str) -> PlayerEntity:
+    response = _game_table().get_item(
+        Key={'gameId': game_id, 'entity': Entities.player(user_id)}
+    )
+    item = response.get('Item')
+    if item:
+        return PlayerEntity(**item)
+
+
 def get_user_connections(user_ids: List[str]):
     connections = []
     for user_id in user_ids:
@@ -316,12 +329,35 @@ def get_fact_sheet(fact_sheet_id: str) -> FactSheetEntity:
         return FactSheetEntity(**item)
 
 
-def update_game_question(game_id: str, question: dict):
+def update_game_question(game_id: str, question: dict, game_state):
     _game_table().update_item(
         Key={'gameId': game_id, 'entity': Entities.GAME},
         UpdateExpression='SET question = :question, gameState = :gameState',
         ExpressionAttributeValues={
             ':question': question,
-            ':gameState': GameState.ASK_QUESTION
+            ':gameState': game_state
+        }
+    )
+
+
+def update_player_answer(game_id: str, user_id: str, answer: str, answer_time: int):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.player(user_id)},
+        UpdateExpression='SET answer = :answer, answerTime = :answerTime',
+        ExpressionAttributeValues={
+            ':answer': answer,
+            ':answerTime': answer_time
+        }
+    )
+
+
+def update_player_score(game_id, user_id, increment: float):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.player(user_id)},
+        UpdateExpression='ADD score :increment SET answer = :answer, answerTime = :answerTime',
+        ExpressionAttributeValues={
+            ':increment': Decimal(increment),
+            ':answer': None,
+            ':answerTime': None
         }
     )

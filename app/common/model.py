@@ -12,6 +12,7 @@ class Actions(str, Enum):
     NEW_GAME = "$newGame"
     JOIN_GAME = "$joinGame"
     READY = "$ready",
+    ANSWER = "$answer"
     EXIT_GAME = "$exitGame",
     CHOOSE_THEME = "$chooseTheme"
     GAME_STATE_NOTIFICATION = "$gameStateNotification"
@@ -68,6 +69,13 @@ class ReadyRequest(WsApiRequest):
     gameId: str
 
 
+@dataclass
+class AnswerRequest(WsApiRequest):
+    userId: str
+    gameId: str
+    answer: str
+
+
 @dataclass()
 class ApiResponse:
     pass
@@ -113,6 +121,11 @@ class JoinGameResponse(NewGameResponse):
 
 @dataclass
 class ReadyResponse(ApiResponse):
+    pass
+
+
+@dataclass
+class AnswerResponse(ApiResponse):
     pass
 
 
@@ -167,6 +180,13 @@ class WaitPlayersReady(SfPayload):
 class AskQuestion(SfPayload):
     event: ClassVar[str] = "askQuestion"
     gameId: str
+    taskToken: str
+
+
+@dataclass
+class ShowAnswer(SfPayload):
+    event: ClassVar[str] = "showAnswer"
+    gameId: str
 
 
 class ApiError(Exception):
@@ -197,6 +217,8 @@ def parse_ws_request(event):
             return JoinGameRequest(**asdict(req), **req.data)
         elif req.action == Actions.READY:
             return ReadyRequest(**asdict(req), **req.data)
+        elif req.action == Actions.ANSWER:
+            return AnswerRequest(**asdict(req), **req.data)
     else:
         raise Exception(f'Unexpected route {req.route_key} and action {req.action}')
 

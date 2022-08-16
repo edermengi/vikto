@@ -14,29 +14,43 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
           "Type" : "Task",
           "Resource" : "arn:aws:states:::lambda:invoke.waitForTaskToken",
           "Parameters" : {
-            "FunctionName": aws_lambda_function.flow_lambda_fn.function_name
+            "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
             "Payload" : {
-              "event": "waitPlayersReady",
+              "event" : "waitPlayersReady",
               "gameId.$" : "$.gameId",
               "taskToken.$" : "$$.Task.Token"
             }
           },
-          "ResultPath": "$.result",
-          "Next": "AskQuestion"
+          "ResultPath" : "$.result",
+          "Next" : "AskQuestion"
         },
-        "AskQuestion": {
+        "AskQuestion" : {
+          "Type" : "Task",
+          "Resource" : "arn:aws:states:::lambda:invoke.waitForTaskToken",
+          "Parameters" : {
+            "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
+            "Payload" : {
+              "event" : "askQuestion",
+              "gameId.$" : "$.gameId",
+              "taskToken.$" : "$$.Task.Token"
+            }
+          },
+          "ResultPath" : "$.result",
+          "Next" : "ShowAnswer"
+        },
+        "ShowAnswer" : {
           "Type" : "Task",
           "Resource" : "arn:aws:states:::lambda:invoke",
           "Parameters" : {
-            "FunctionName": aws_lambda_function.flow_lambda_fn.function_name
+            "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
             "Payload" : {
-              "event": "askQuestion",
+              "event" : "showAnswer",
               "gameId.$" : "$.gameId"
             }
           },
-          "ResultPath": "$.result",
+          "ResultPath" : "$.result",
           "End" : true
-        },
+        }
       }
     })
 
