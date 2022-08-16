@@ -1,5 +1,6 @@
 import functools
 from dataclasses import dataclass, asdict
+from enum import Enum
 from typing import List, Set
 
 import boto3
@@ -15,10 +16,31 @@ class Entities:
     GAME = 'GAME'
     PLAYER = 'PLAYER'
     USER = 'USER'
+    QUIZ = 'QUIZ'
+    TOPIC = 'TOPIC'
+    FACT_SHEET = 'FACT_SHEET'
 
     @staticmethod
     def player(user_id: str):
         return f'{Entities.PLAYER}#{user_id}'
+
+    @staticmethod
+    def quiz(lang: str, eid: str):
+        return f'{lang.upper()}#{QuizIds.QUIZ}#{eid}'
+
+    @staticmethod
+    def topic(lang: str, eid: str):
+        return f'{lang.upper()}#{QuizIds.TOPIC}#{eid}'
+
+    @staticmethod
+    def fact_sheet(lang: str, eid: str):
+        return f'{lang.upper()}#{QuizIds.FACT_SHEET}#{eid}'
+
+
+class QuizIds:
+    QUIZ = 'QUIZ'
+    TOPIC = 'TOPIC'
+    FACT_SHEET = 'FACT_SHEET'
 
 
 @dataclass
@@ -33,12 +55,21 @@ class SessionEntity:
     ttl: int = util.ttl()
 
 
+class GameState(str, Enum):
+    WAIT_START = "WAIT_START"
+    ASK_QUESTION = "ASK_QUESTION"
+    SHOW_ANSWER = "SHOW_ANSWER"
+    SHOW_WINNER = "SHOW_WINNER"
+
+
 @dataclass
 class GameEntity:
     gameId: str
     userId: str
     startedAt: str
     entity: str = Entities.GAME
+    gameState: GameState = GameState.WAIT_START
+    question: dict = None
     endedAt: str = None
     taskToken: str = None
     ttl: int = util.ttl()
@@ -67,6 +98,32 @@ class UserEntity:
     ttl: int = util.ttl()
 
 
+class QuizType(str, Enum):
+    SELECT_ONE = "SELECT_ONE"
+
+
+@dataclass
+class QuizEntity:
+    id: str
+    entity: str
+    quizType: QuizType
+    question: str
+    title: str
+    factSheet: str
+    questionColumn: str = None
+    questionHintColumn: str = None
+    answerColumn: str = None
+    answerHintColumn: str = None
+
+
+@dataclass
+class FactSheetEntity:
+    id: str
+    entity: str
+    fileKey: str
+    columns: Set[str]
+
+
 @functools.cache
 def _dynamodb(_=''):
     print('Dynamodb client created')
@@ -89,6 +146,12 @@ def _game_table(_=''):
 def _user_table(_=''):
     print('User client created')
     return _dynamodb().Table(envs.DYNAMODB_USER_TABLE_NAME)
+
+
+@functools.cache
+def _quiz_table(_=''):
+    print('Quiz client created')
+    return _dynamodb().Table(envs.DYNAMODB_QUIZ_TABLE_NAME)
 
 
 def create_session(connection_id: str, source_ip: str, connected_at: str):
@@ -235,3 +298,30 @@ def get_game(game_id: str) -> GameEntity:
     item = response.get('Item')
     if item:
         return GameEntity(**item)
+
+
+def get_quizzes(lang: str) -> List[QuizEntity]:
+    response = _quiz_table().query(
+        KeyConditionExpression=Key('id').eq(QuizIds.QUIZ) & Key('entity').begins_with(lang.upper())
+    )
+    return [QuizEntity(**item) for item in response['Items']]
+
+
+def get_fact_sheet(fact_sheet_id: str) -> FactSheetEntity:
+    response = _quiz_table().get_item(
+        Key={'id': QuizIds.FACT_SHEET, 'entity': fact_sheet_id}
+    )
+    item = response.get('Item')
+    if item:
+        return FactSheetEntity(**item)
+
+
+def update_game_question(game_id: str, question: dict):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.GAME},
+        UpdateExpression='SET question = :question, gameState = :gameState',
+        ExpressionAttributeValues={
+            ':question': question,
+            ':gameState': GameState.ASK_QUESTION
+        }
+    )

@@ -116,10 +116,29 @@ class ReadyResponse(ApiResponse):
     pass
 
 
-@dataclass()
+@dataclass
+class AnswerOption:
+    answer: str
+    hint: str
+    right: bool = False
+
+
+@dataclass
+class Question:
+    title: str
+    question: str
+    questionItem: str
+    questionHint: str
+    answerOptions: List[AnswerOption]
+
+
+@dataclass
 class GameStateResponse(ApiResponse):
     gameId: str
     players: List[Player]
+    gameState: str = None
+    question: dict = None
+    # question: Question = None
 
 
 @dataclass
@@ -142,6 +161,12 @@ class WaitPlayersReady(SfPayload):
     event: ClassVar[str] = "waitPlayersReady"
     gameId: str
     taskToken: str
+
+
+@dataclass
+class AskQuestion(SfPayload):
+    event: ClassVar[str] = "askQuestion"
+    gameId: str
 
 
 class ApiError(Exception):

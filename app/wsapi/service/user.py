@@ -1,5 +1,5 @@
 from common.model import ConnectRequest, DisconnectRequest, UpdateUserRequest
-from wsapi.service import broadcast
+from common.service import broadcast
 from common.storage import db
 
 

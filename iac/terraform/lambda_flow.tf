@@ -14,10 +14,12 @@ resource "aws_lambda_function" "flow_lambda_fn" {
 
   environment {
     variables = {
+      LOG_LEVEL                   = "INFO"
       CONTENT_BUCKET              = aws_s3_bucket.content_bucket.bucket
       DYNAMODB_SESSION_TABLE_NAME = aws_dynamodb_table.session_table.name
       DYNAMODB_GAME_TABLE_NAME    = aws_dynamodb_table.game_table.name
       DYNAMODB_USER_TABLE_NAME    = aws_dynamodb_table.user_table.name
+      DYNAMODB_QUIZ_TABLE_NAME    = aws_dynamodb_table.quiz_table.name
       BROADCAST_LAMBDA_NAME       = aws_lambda_function.broadcast_lambda_fn.function_name
     }
   }

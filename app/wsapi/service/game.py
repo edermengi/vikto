@@ -2,7 +2,8 @@ import secrets
 import string
 
 from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse, ReadyRequest, ReadyResponse
-from wsapi.service import broadcast, sfn
+from wsapi.service import sfn
+from common.service import broadcast
 from common.storage import db
 
 
@@ -40,5 +41,6 @@ def ready(req: ReadyRequest):
     if ready_no >= min(2, len(players)):
         game = db.get_game(game_id)
         sfn.send_task_success(game.taskToken)
+        db.update_task_token(game_id, None)
     broadcast.send_game_state(game_id)
     return ReadyResponse()

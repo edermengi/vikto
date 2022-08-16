@@ -38,7 +38,16 @@ def send_to_users(message: WsApiBody, user_entities: List[UserEntity]):
 
 def send_game_state(game_id: str):
     players, user_entities = _get_players(game_id)
-    notification = WsApiBody(Actions.GAME_STATE_NOTIFICATION, GameStateResponse(game_id, players))
+    game = db.get_game(game_id)
+    notification = WsApiBody(
+        Actions.GAME_STATE_NOTIFICATION,
+        GameStateResponse(
+            game_id,
+            players,
+            game.gameState,
+            game.question
+        )
+    )
     send_to_users(notification, user_entities)
 
 

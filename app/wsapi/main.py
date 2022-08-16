@@ -1,12 +1,13 @@
+from common import log
 from common.model import parse_ws_request, ConnectRequest, DisconnectRequest, UpdateUserRequest, \
     NewGameRequest, WsApiResponse, ApiResponse, WsApiBody, JoinGameRequest, ReadyRequest
 from wsapi.service import user, game
 
 
 def handler(event, context):
-    print(event)
+    log.info(f'event: {event}')
     req = parse_ws_request(event)
-    print(req)
+    log.info(f'parsed req: {req}')
     resp: ApiResponse
 
     if isinstance(req, ConnectRequest):

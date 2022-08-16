@@ -21,8 +21,22 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
               "taskToken.$" : "$$.Task.Token"
             }
           },
+          "ResultPath": "$.result",
+          "Next": "AskQuestion"
+        },
+        "AskQuestion": {
+          "Type" : "Task",
+          "Resource" : "arn:aws:states:::lambda:invoke",
+          "Parameters" : {
+            "FunctionName": aws_lambda_function.flow_lambda_fn.function_name
+            "Payload" : {
+              "event": "askQuestion",
+              "gameId.$" : "$.gameId"
+            }
+          },
+          "ResultPath": "$.result",
           "End" : true
-        }
+        },
       }
     })
 
