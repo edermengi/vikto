@@ -49,7 +49,26 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
             }
           },
           "ResultPath" : "$.result",
-          "End" : true
+          "Next" : "ChoiceState"
+        },
+        "ChoiceState" : {
+          "Type" : "Choice",
+          "Choices" : [
+            {
+              "Variable" : "$.stop",
+              "IsPresent" : true,
+              "Next" : "Stop"
+            }
+          ],
+          "Default" : "WaitBeforeAskQuestion"
+        },
+        "WaitBeforeAskQuestion": {
+          "Type": "Wait",
+          "Seconds": 3,
+          "Next": "AskQuestion"
+        }
+        "Stop" : {
+          "Type" : "Succeed"
         }
       }
     })
