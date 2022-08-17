@@ -2,14 +2,16 @@
 
 ```mermaid
 stateDiagram-v2
-    state if_state <<choice>>
+    state stop_game_choice_state <<choice>>
     [*] --> WAIT_START
     WAIT_START --> ASK_TOPIC: All players  click 'START GAME'
-    ASK_TOPIC --> ASK_QUESTION: Players select topic
+    ASK_TOPIC --> SHOW_TOPIC: Players select topic
+    SHOW_TOPIC --> ASK_QUESTION: 
     ASK_QUESTION --> SHOW_ANSWER: Players select answer
-    SHOW_ANSWER --> if_state
-    if_state --> SHOW_WINNER: if n == 0
-    if_state --> ASK_TOPIC : if n > 0
+    SHOW_ANSWER --> stop_game_choice_state
+    stop_game_choice_state --> SHOW_WINNER: if remaining_rounds == 0
+    stop_game_choice_state --> ASK_TOPIC : if remaining_rounds > 0
+    stop_game_choice_state --> ASK_QUESTION : if remaining_questions > 0
     SHOW_WINNER --> [*]
     
 ```

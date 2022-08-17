@@ -13,6 +13,7 @@ class Actions(str, Enum):
     JOIN_GAME = "$joinGame"
     READY = "$ready",
     ANSWER = "$answer"
+    CHOOSE_TOPIC = "$chooseTopic"
     EXIT_GAME = "$exitGame",
     CHOOSE_THEME = "$chooseTheme"
     GAME_STATE_NOTIFICATION = "$gameStateNotification"
@@ -74,6 +75,13 @@ class AnswerRequest(WsApiRequest):
     userId: str
     gameId: str
     answer: str
+
+
+@dataclass
+class ChooseTopicRequest(WsApiRequest):
+    userId: str
+    gameId: str
+    topic: str
 
 
 @dataclass()
@@ -146,11 +154,20 @@ class Question:
 
 
 @dataclass
+class Topic:
+    topic: str
+    title: str
+    image: str = None
+
+
+@dataclass
 class GameStateResponse(ApiResponse):
     gameId: str
     players: List[Player]
     gameState: str = None
     question: dict = None
+    topicOptions: List[Topic] = None
+    topic: Topic = None
     # question: Question = None
 
 
@@ -177,6 +194,13 @@ class WaitPlayersReady(SfPayload):
 
 
 @dataclass
+class AskTopic(SfPayload):
+    event: ClassVar[str] = "askTopic"
+    gameId: str
+    taskToken: str
+
+
+@dataclass
 class AskQuestion(SfPayload):
     event: ClassVar[str] = "askQuestion"
     gameId: str
@@ -186,6 +210,18 @@ class AskQuestion(SfPayload):
 @dataclass
 class ShowAnswer(SfPayload):
     event: ClassVar[str] = "showAnswer"
+    gameId: str
+
+
+@dataclass
+class ShowTopic(SfPayload):
+    event: ClassVar[str] = "showTopic"
+    gameId: str
+
+
+@dataclass
+class ShowWinner(SfPayload):
+    event: ClassVar[str] = "showWinner"
     gameId: str
 
 
@@ -219,6 +255,8 @@ def parse_ws_request(event):
             return ReadyRequest(**asdict(req), **req.data)
         elif req.action == Actions.ANSWER:
             return AnswerRequest(**asdict(req), **req.data)
+        elif req.action == Actions.CHOOSE_TOPIC:
+            return ChooseTopicRequest(**asdict(req), **req.data)
     else:
         raise Exception(f'Unexpected route {req.route_key} and action {req.action}')
 

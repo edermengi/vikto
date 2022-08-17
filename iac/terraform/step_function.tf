@@ -22,6 +22,33 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
             }
           },
           "ResultPath" : "$.result",
+          "Next" : "AskTopic"
+        },
+        "AskTopic" : {
+          "Type" : "Task",
+          "Resource" : "arn:aws:states:::lambda:invoke.waitForTaskToken",
+          "Parameters" : {
+            "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
+            "Payload" : {
+              "event" : "askTopic",
+              "gameId.$" : "$.gameId",
+              "taskToken.$" : "$$.Task.Token"
+            }
+          },
+          "ResultPath" : "$.result",
+          "Next" : "ShowTopic"
+        },
+        "ShowTopic" : {
+          "Type" : "Task",
+          "Resource" : "arn:aws:states:::lambda:invoke",
+          "Parameters" : {
+            "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
+            "Payload" : {
+              "event" : "showTopic",
+              "gameId.$" : "$.gameId"
+            }
+          },
+          "ResultPath" : "$.result",
           "Next" : "AskQuestion"
         },
         "AskQuestion" : {
@@ -49,26 +76,41 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
             }
           },
           "ResultPath" : "$.result",
-          "Next" : "ChoiceState"
+          "Next" : "WaitBeforeChoice"
         },
+        "WaitBeforeChoice" : {
+          "Type" : "Wait",
+          "Seconds" : 3,
+          "Next" : "ChoiceState"
+        }
         "ChoiceState" : {
           "Type" : "Choice",
           "Choices" : [
             {
-              "Variable" : "$.stop",
-              "IsPresent" : true,
-              "Next" : "Stop"
+              "Variable" : "$.remainingRounds",
+              "NumericGreaterThan" : 0,
+              "Next" : "AskTopic"
+            },
+            {
+              "Variable" : "$.remainingQuestions",
+              "NumericGreaterThan" : 0,
+              "Next" : "AskQuestion"
             }
           ],
-          "Default" : "WaitBeforeAskQuestion"
+          "Default" : "ShowWinner"
         },
-        "WaitBeforeAskQuestion": {
-          "Type": "Wait",
-          "Seconds": 3,
-          "Next": "AskQuestion"
-        }
-        "Stop" : {
-          "Type" : "Succeed"
+        "ShowWinner" : {
+          "Type" : "Task",
+          "Resource" : "arn:aws:states:::lambda:invoke",
+          "Parameters" : {
+            "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
+            "Payload" : {
+              "event" : "showWinner",
+              "gameId.$" : "$.gameId"
+            }
+          },
+          "ResultPath" : "$.result",
+          "End" : true
         }
       }
     })

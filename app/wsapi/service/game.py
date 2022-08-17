@@ -2,7 +2,7 @@ import secrets
 import string
 
 from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse, ReadyRequest, \
-    ReadyResponse, AnswerRequest
+    ReadyResponse, AnswerRequest, ChooseTopicRequest
 from wsapi.service import sfn
 from common.service import broadcast
 from common.storage import db, util
@@ -58,3 +58,18 @@ def answer(req: AnswerRequest):
     if all_answered:
         game = db.get_game(game_id)
         sfn.send_task_success(game.taskToken)
+
+
+def choose_topic(req: ChooseTopicRequest):
+    game_id = req.gameId
+    user_id = req.userId
+    topic = req.topic
+
+    db.update_player_topic_vote(game_id, user_id, topic)
+    players = db.get_active_players(game_id)
+    all_voted = all([p.topicVote is not None for p in players])
+    if all_voted:
+        game = db.get_game(game_id)
+        sfn.send_task_success(game.taskToken)
+
+    return None

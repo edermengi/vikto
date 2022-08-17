@@ -1,7 +1,7 @@
 from typing import List, Dict
 
-from common.model import Player
-from common.storage.db import PlayerEntity, UserEntity
+from common.model import Player, Topic
+from common.storage.db import PlayerEntity, UserEntity, TopicOption
 
 
 def map_player_entities(player_entities: List[PlayerEntity], user_entities: List[UserEntity]) -> List[Player]:
@@ -17,3 +17,13 @@ def map_player_entities(player_entities: List[PlayerEntity], user_entities: List
         )
         for pe in player_entities
     ]
+
+
+def map_topic(topic: TopicOption) -> Topic:
+    if topic is not None:
+        return Topic(topic.topic, topic.title, topic.image)
+
+
+def map_topics(topics: List[TopicOption]) -> List[Topic]:
+    if topics is not None:
+        return [map_topic(t) for t in topics]

@@ -58,22 +58,49 @@ class SessionEntity:
 
 class GameState(str, Enum):
     WAIT_START = "WAIT_START"
+    ASK_TOPIC = 'ASK_TOPIC'
+    SHOW_TOPIC = 'SHOW_TOPIC'
     ASK_QUESTION = "ASK_QUESTION"
     SHOW_ANSWER = "SHOW_ANSWER"
     SHOW_WINNER = "SHOW_WINNER"
 
 
 @dataclass
-class GameEntity:
+class TopicOption:
+    topic: str
+    title: str
+    image: str = None
+
+
+@dataclass
+class Entity:
+    # todo implement __post_init__ to initialize dataclass properties
+    pass
+
+
+@dataclass
+class GameEntity(Entity):
     gameId: str
     userId: str
     startedAt: str
     entity: str = Entities.GAME
     gameState: GameState = GameState.WAIT_START
+    ttl: int = util.ttl()
     question: dict = None
     endedAt: str = None
     taskToken: str = None
-    ttl: int = util.ttl()
+    totalNumberOfRounds = 3
+    totalNumberOfQuestions = 5
+    roundNo = 0
+    questionNo = 0
+    topicOptions: List[TopicOption] = None
+    topic: TopicOption = None
+
+    def __post_init__(self):
+        if self.topicOptions is not None and len(self.topicOptions) > 0 and isinstance(self.topicOptions[0], dict):
+            self.topicOptions = [TopicOption(**t) for t in self.topicOptions]
+        if self.topic is not None and isinstance(self.topic, dict):
+            self.topic = TopicOption(**self.topic)
 
 
 @dataclass
@@ -87,6 +114,7 @@ class PlayerEntity:
     score: Decimal = Decimal(0.0)
     answer: str = None
     answerTime: int = None
+    topicVote: str = None
     ttl: int = util.ttl()
 
 
@@ -118,6 +146,14 @@ class QuizEntity:
     questionHintColumn: str = None
     answerColumn: str = None
     answerHintColumn: str = None
+
+
+@dataclass
+class TopicEntity:
+    id: str
+    entity: str
+    title: str
+    image: str = None
 
 
 @dataclass
@@ -324,6 +360,22 @@ def get_quizzes(lang: str) -> List[QuizEntity]:
     return [QuizEntity(**item) for item in response['Items']]
 
 
+def get_topics(lang: str) -> List[TopicEntity]:
+    response = _quiz_table().query(
+        KeyConditionExpression=Key('id').eq(QuizIds.TOPIC) & Key('entity').begins_with(lang.upper())
+    )
+    return [TopicEntity(**item) for item in response['Items']]
+
+
+def get_topic(topic: str) -> TopicEntity:
+    response = _quiz_table().get_item(
+        Key={'id': QuizIds.TOPIC, 'entity': topic}
+    )
+    item = response.get('Item')
+    if item:
+        return TopicEntity(**item)
+
+
 def get_fact_sheet(fact_sheet_id: str) -> FactSheetEntity:
     response = _quiz_table().get_item(
         Key={'id': QuizIds.FACT_SHEET, 'entity': fact_sheet_id}
@@ -340,6 +392,39 @@ def update_game_question(game_id: str, question: dict, game_state):
         ExpressionAttributeValues={
             ':question': question,
             ':gameState': game_state
+        }
+    )
+
+
+def update_game_topic_options(game_id: str, topic_options: List[TopicOption], game_state):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.GAME},
+        UpdateExpression='SET topicOptions = :topicOptions, gameState = :gameState',
+        ExpressionAttributeValues={
+            ':topicOptions': [asdict(t) for t in topic_options],
+            ':gameState': game_state
+        }
+    )
+
+
+def update_game_topic(game_id: str, topic: TopicOption, game_state):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.GAME},
+        UpdateExpression='SET topic = :topic, topicOptions = :topicOptions, gameState = :gameState',
+        ExpressionAttributeValues={
+            ':topic': asdict(topic),
+            ':topicOptions': None,
+            ':gameState': game_state
+        }
+    )
+
+
+def update_player_topic_vote(game_id: str, user_id: str, topic: str):
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.player(user_id)},
+        UpdateExpression='SET topicVote = :topicVote',
+        ExpressionAttributeValues={
+            ':topicVote': topic
         }
     )
 
