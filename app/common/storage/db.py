@@ -2,7 +2,7 @@ import functools
 from dataclasses import dataclass, asdict
 from decimal import Decimal
 from enum import Enum
-from typing import List, Set
+from typing import List, Set, Dict
 
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
@@ -126,6 +126,10 @@ class FactSheetEntity:
     entity: str
     fileKey: str
     columns: Set[str]
+    columnTypes: Dict[str, str]
+
+    def column_type(self, column: str):
+        return self.columnTypes.get(column, 'string')
 
 
 @functools.cache

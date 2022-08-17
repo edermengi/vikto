@@ -28,10 +28,14 @@ def ask_question(payload: AskQuestion):
     question = {
         'question': quiz.question,
         'questionItem': answer_row[quiz.questionColumn],
+        'questionItemType': sheet.column_type(quiz.questionColumn),
         'questionHintItem': answer_row[quiz.questionHintColumn] if quiz.questionHintColumn else None,
+        'questionHintItemType': sheet.column_type(quiz.questionHintColumn) if quiz.questionHintColumn else None,
         'title': quiz.title,
         'answer': answer_row[quiz.answerColumn],
+        'answerType': sheet.column_type(quiz.answerColumn),
         'answerHint': answer_row[quiz.answerHintColumn] if quiz.answerHintColumn else None,
+        'answerHintType': sheet.column_type(quiz.answerHintColumn) if quiz.answerHintColumn else None,
         'answerOptions': [{
             'answer': row[quiz.answerColumn],
             'hint': row[quiz.answerHintColumn] if quiz.answerHintColumn else None
