@@ -1,0 +1,8 @@
+# Cat breeds, with pictures
+SELECT ?breedLabel ?breedImage
+WHERE
+{
+  ?breed wdt:P31 wd:Q43577 .
+  ?breed wdt:P18 ?breedImage
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "ru,en" }
+}
