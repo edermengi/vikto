@@ -19,7 +19,7 @@ def handler(event, _):
 
 
 def send_to_users(message: WsApiBody, user_entities: List[UserEntity]):
-    data = json.dumps(asdict(message))
+    data = json.dumps(asdict(message), default=str)
 
     for user_entity in user_entities:
         if not user_entity.connections:
