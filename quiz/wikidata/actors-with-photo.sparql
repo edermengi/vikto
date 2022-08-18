@@ -1,0 +1,9 @@
+# Actors with photo
+SELECT ?actorLabel ?image
+WHERE
+{
+  ?actor wdt:P106 wd:Q33999 .
+  ?actor wdt:P18 ?image .
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "ru,en" }
+} LIMIT 5000

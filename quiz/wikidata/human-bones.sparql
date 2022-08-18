@@ -1,0 +1,22 @@
+# Human bones with pictures
+SELECT DISTINCT ?element ?elementLabel ?image
+WHERE
+{
+  {
+    ?element wdt:P279 ?subclass .
+    ?subclass wdt:P279 wd:Q265868
+  }
+  UNION {
+     ?element  wdt:P31 wd:Q265868
+  }
+  UNION {
+     ?element  wdt:P279 wd:Q265868
+  }
+  UNION {
+     ?element  wdt:P279 wd:Q928150
+  }
+
+  ?element wdt:P18 ?image .
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "ua,ru,en" }
+}
