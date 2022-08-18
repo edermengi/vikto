@@ -22,9 +22,8 @@ def ask_question(payload: AskQuestion):
     log.info(f'Retrieved fact sheet {sheet}')
     sheet_rows = fact_sheet.load_rows(sheet.fileKey)
     log.info(f'Loaded sheet {sheet.fileKey} of {len(sheet_rows)} rows')
-    answer_row, question_rows = _pick_answer_and_questions(sheet_rows, quiz.answerColumn)
-    log.info(f'Randomly picked answer {answer_row} and questions {question_rows}')
-    all_rows = question_rows + [answer_row]
+    answer_row, all_rows = _pick_answer_and_questions(sheet_rows, quiz.answerColumn)
+    log.info(f'Randomly picked answer {answer_row} and options {all_rows}')
     Random().shuffle(all_rows)
     question = {
         'question': quiz.question,
@@ -55,10 +54,12 @@ def ask_question(payload: AskQuestion):
 
 def _pick_answer_and_questions(sheet_rows, answer_column):
     answer_row = Random().choice(sheet_rows)
-    question_rows = []
-    while len(question_rows) != 3:
+    log.info('Select random ')
+    answer_options = {answer_row[answer_column]: answer_row}
+    while len(answer_options) != 4 and len(answer_options) != len(sheet_rows):
         question_row = Random().choice(sheet_rows)
-        if question_row[answer_column] != answer_row[answer_column]:
-            question_rows.append(question_row)
+        answer_option = question_row[answer_column]
+        if answer_option not in answer_options:
+            answer_options[answer_option] = question_row
 
-    return answer_row, question_rows
+    return answer_row, [v for v in answer_options.values()]
