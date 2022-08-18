@@ -1,0 +1,17 @@
+# Dog breeds, with pictures
+SELECT ?element ?elementLabel ?symbol ?atomicNumber (YEAR(?discoveryTime) as ?discoveryYear) ?discoveredByLabel ?image
+WHERE
+{
+  ?element wdt:P31 wd:Q11344 .
+  ?element wdt:P246 ?symbol .
+  ?element wdt:P1086 ?atomicNumber .
+  OPTIONAL {
+    ?element wdt:P18 ?image .
+  }
+  OPTIONAL {
+    ?element wdt:P575 ?discoveryTime .
+    ?element wdt:P61 ?discoveredBy .
+  }
+
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "ru,en" }
+} ORDER BY ?atomicNumber
