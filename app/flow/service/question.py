@@ -22,7 +22,7 @@ def ask_question(payload: AskQuestion):
     log.info(f'Retrieved fact sheet {sheet}')
     sheet_rows = fact_sheet.load_rows(sheet.fileKey)
     log.info(f'Loaded sheet {sheet.fileKey} of {len(sheet_rows)} rows')
-    answer_row, all_rows = _pick_answer_and_questions(sheet_rows, quiz.answerColumn)
+    answer_row, all_rows = _pick_answer_and_questions(sheet_rows, quiz.answerColumn, quiz.questionColumn)
     log.info(f'Randomly picked answer {answer_row} and options {all_rows}')
     Random().shuffle(all_rows)
     question = {
@@ -52,9 +52,10 @@ def ask_question(payload: AskQuestion):
     broadcast.send_game_state(game_id)
 
 
-def _pick_answer_and_questions(sheet_rows, answer_column):
+def _pick_answer_and_questions(sheet_rows, answer_column, question_column):
+    sheet_rows = [row for row in sheet_rows if (row[answer_column] and row[question_column])]
+    log.info(f'Found {len(sheet_rows)} rows to select from')
     answer_row = Random().choice(sheet_rows)
-    log.info('Select random ')
     answer_options = {answer_row[answer_column]: answer_row}
     while len(answer_options) != 4 and len(answer_options) != len(sheet_rows):
         question_row = Random().choice(sheet_rows)
