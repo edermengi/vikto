@@ -96,8 +96,8 @@ class GameEntity(Entity):
     question: dict = None
     endedAt: str = None
     taskToken: str = None
-    totalNumberOfRounds: int = 1
-    totalNumberOfQuestions: int = 1
+    totalNumberOfRounds: int = 3
+    totalNumberOfQuestions: int = 5
     roundNo: int = 0
     questionNo: int = 0
     topicOptions: List[TopicOption] = None
