@@ -42,8 +42,7 @@ def ready(req: ReadyRequest):
     if ready_no >= min(2, len(players)):
         game = db.get_game(game_id)
         sfn.send_task_success(game.taskToken)
-        db.update_task_token(game_id, None)
-    broadcast.send_game_state(game_id)
+        db.update_game(game_id, taskToken=None)
     return ReadyResponse()
 
 

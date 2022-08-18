@@ -3,4 +3,4 @@ from common.storage import db
 
 
 def on_wait_players_ready(payload: WaitPlayersReady):
-    db.update_task_token(payload.gameId, payload.taskToken)
+    db.update_game(payload.gameId, taskToken=payload.taskToken)

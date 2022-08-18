@@ -300,10 +300,16 @@ def join_game(game_id: str, user_id: str):
                           userId=user_id,
                           joinedAt=util.now_iso(),
                           entity=Entities.player(user_id))
-
-    _game_table().put_item(
-        Item=asdict(player)
-    )
+    try:
+        _game_table().put_item(
+            Item=asdict(player),
+            ConditionExpression=Attr('userId').not_exists(),
+        )
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            pass
+        else:
+            raise e
 
 
 def get_active_players(game_id: str) -> List[PlayerEntity]:
@@ -342,16 +348,6 @@ def update_ready_status(game_id: str, user_id: str) -> PlayerEntity:
         ReturnValues='ALL_NEW'
     )
     return PlayerEntity(**response['Attributes'])
-
-
-def update_task_token(game_id, task_token):
-    _game_table().update_item(
-        Key={'gameId': game_id, 'entity': Entities.GAME},
-        UpdateExpression='SET taskToken = :taskToken',
-        ExpressionAttributeValues={
-            ':taskToken': task_token
-        }
-    )
 
 
 def get_game(game_id: str) -> GameEntity:
@@ -395,45 +391,11 @@ def get_fact_sheet(fact_sheet_id: str) -> FactSheetEntity:
         return FactSheetEntity(**item)
 
 
-def update_game_question(game_id: str, question: dict, game_state):
-    _game_table().update_item(
-        Key={'gameId': game_id, 'entity': Entities.GAME},
-        UpdateExpression='SET question = :question, gameState = :gameState',
-        ExpressionAttributeValues={
-            ':question': question,
-            ':gameState': game_state
-        }
-    )
-
-
 def update_game(game_id: str, **kwargs):
     upd_args = update_expression(GameEntity, **kwargs)
     _game_table().update_item(
         Key={'gameId': game_id, 'entity': Entities.GAME},
         **upd_args
-    )
-
-
-def update_game_topic_options(game_id: str, topic_options: List[TopicOption], game_state):
-    _game_table().update_item(
-        Key={'gameId': game_id, 'entity': Entities.GAME},
-        UpdateExpression='SET topicOptions = :topicOptions, gameState = :gameState',
-        ExpressionAttributeValues={
-            ':topicOptions': [asdict(t) for t in topic_options],
-            ':gameState': game_state
-        }
-    )
-
-
-def update_game_topic(game_id: str, topic: TopicOption, game_state):
-    _game_table().update_item(
-        Key={'gameId': game_id, 'entity': Entities.GAME},
-        UpdateExpression='SET topic = :topic, topicOptions = :topicOptions, gameState = :gameState',
-        ExpressionAttributeValues={
-            ':topic': asdict(topic),
-            ':topicOptions': None,
-            ':gameState': game_state
-        }
     )
 
 
