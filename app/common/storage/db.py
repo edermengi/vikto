@@ -10,6 +10,7 @@ from botocore.exceptions import ClientError
 
 from common import envs
 from common.storage import util
+from common.storage.db_util import update_expression
 
 
 class Entities:
@@ -73,6 +74,12 @@ class TopicOption:
 
 
 @dataclass
+class WinnerItem:
+    userId: str
+    score: Decimal
+
+
+@dataclass
 class Entity:
     # todo implement __post_init__ to initialize dataclass properties
     pass
@@ -89,18 +96,21 @@ class GameEntity(Entity):
     question: dict = None
     endedAt: str = None
     taskToken: str = None
-    totalNumberOfRounds = 3
-    totalNumberOfQuestions = 5
-    roundNo = 0
-    questionNo = 0
+    totalNumberOfRounds: int = 1
+    totalNumberOfQuestions: int = 1
+    roundNo: int = 0
+    questionNo: int = 0
     topicOptions: List[TopicOption] = None
     topic: TopicOption = None
+    winners: List[WinnerItem] = None
 
     def __post_init__(self):
         if self.topicOptions is not None and len(self.topicOptions) > 0 and isinstance(self.topicOptions[0], dict):
             self.topicOptions = [TopicOption(**t) for t in self.topicOptions]
         if self.topic is not None and isinstance(self.topic, dict):
             self.topic = TopicOption(**self.topic)
+        if self.winners is not None and len(self.winners) > 0 and isinstance(self.winners[0], dict):
+            self.winners = [WinnerItem(**t) for t in self.winners]
 
 
 @dataclass
@@ -353,9 +363,9 @@ def get_game(game_id: str) -> GameEntity:
         return GameEntity(**item)
 
 
-def get_quizzes(lang: str) -> List[QuizEntity]:
+def get_quizzes(entity_prefix: str) -> List[QuizEntity]:
     response = _quiz_table().query(
-        KeyConditionExpression=Key('id').eq(QuizIds.QUIZ) & Key('entity').begins_with(lang.upper())
+        KeyConditionExpression=Key('id').eq(QuizIds.QUIZ) & Key('entity').begins_with(entity_prefix.upper())
     )
     return [QuizEntity(**item) for item in response['Items']]
 
@@ -393,6 +403,14 @@ def update_game_question(game_id: str, question: dict, game_state):
             ':question': question,
             ':gameState': game_state
         }
+    )
+
+
+def update_game(game_id: str, **kwargs):
+    upd_args = update_expression(GameEntity, **kwargs)
+    _game_table().update_item(
+        Key={'gameId': game_id, 'entity': Entities.GAME},
+        **upd_args
     )
 
 

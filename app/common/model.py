@@ -161,6 +161,14 @@ class Topic:
 
 
 @dataclass
+class Winner:
+    userId: str
+    userName: str
+    avatar: str
+    score: float
+
+
+@dataclass
 class GameStateResponse(ApiResponse):
     gameId: str
     players: List[Player]
@@ -168,6 +176,7 @@ class GameStateResponse(ApiResponse):
     question: dict = None
     topicOptions: List[Topic] = None
     topic: Topic = None
+    winners: List[Winner] = None
     # question: Question = None
 
 

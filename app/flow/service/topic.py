@@ -6,21 +6,29 @@ from common.model import AskTopic, ShowTopic
 from common.service import broadcast
 from common.storage import db
 from common.storage.db import TopicOption, GameState
+from common.storage.db_util import Add
 
 log = logging.getLogger(__name__)
+
+# How many topics to select from
+OPTION_TOPICS_SIZE = 6
 
 
 def ask_topic(payload: AskTopic):
     game_id = payload.gameId
 
-    db.update_task_token(game_id, payload.taskToken)
     all_topics = db.get_topics('RU')
     log.info(f'Found {len(all_topics)} topics')
-    topics = Random().sample(all_topics, 4)
+    topics = Random().sample(all_topics, OPTION_TOPICS_SIZE)
 
     topic_options = [TopicOption(topic=t.entity, title=t.title, image=t.image) for t in topics]
     log.info(f'Randomly picked topics {topic_options}')
-    db.update_game_topic_options(game_id, topic_options, GameState.ASK_TOPIC)
+    db.update_game(game_id,
+                   topicOptions=topic_options,
+                   gameState=GameState.ASK_TOPIC,
+                   taskToken=payload.taskToken,
+                   roundNo=Add(1),
+                   questionNo=0)
     log.info(f'Broadcast ask topic state')
     broadcast.send_game_state(game_id)
 
@@ -50,6 +58,9 @@ def show_topic(payload: ShowTopic):
         db.update_player_topic_vote(game_id, player.userId, '')
 
     log.info(f'Update game state and topic winner {topic}')
-    db.update_game_topic(game_id, topic, GameState.SHOW_TOPIC)
+    db.update_game(game_id,
+                   topic=topic,
+                   gameState=GameState.SHOW_TOPIC,
+                   topicOptions=None)
     log.info(f'Broadcast show topic state')
     broadcast.send_game_state(game_id)

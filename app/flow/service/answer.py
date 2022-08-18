@@ -38,9 +38,14 @@ def show_answer(payload: ShowAnswer):
         answer_option['answerNo'] = answer_no
 
     log.info(f'Update game state and answer results')
-    db.update_game_question(game_id, game.question, GameState.SHOW_ANSWER)
+    db.update_game(game_id,
+                   question=game.question,
+                   gameState=GameState.SHOW_ANSWER)
     log.info(f'Broadcast results')
     broadcast.send_game_state(game_id)
+    return {
+        'remainingRounds': game.totalNumberOfRounds - game.roundNo,
+        'remainingQuestions': game.totalNumberOfQuestions - game.questionNo}
 
 
 def _answer_match(player: PlayerEntity, correct_answer: str):

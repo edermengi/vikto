@@ -5,6 +5,7 @@ from common.model import AskQuestion
 from common.service import broadcast
 from common.storage import db, fact_sheet
 from common.storage.db import QuizEntity, FactSheetEntity, GameState
+from common.storage.db_util import Add
 
 log = logging.getLogger(__name__)
 
@@ -12,8 +13,8 @@ log = logging.getLogger(__name__)
 def ask_question(payload: AskQuestion):
     game_id = payload.gameId
 
-    db.update_task_token(game_id, payload.taskToken)
-    quizzes = db.get_quizzes('RU')
+    game = db.get_game(game_id)
+    quizzes = db.get_quizzes(game.topic.topic if game.topic else 'RU')
     log.info(f'Found {len(quizzes)} quizzes')
     quiz: QuizEntity = Random().choice(quizzes)
     log.info(f'Randomly choose quiz {quiz}')
@@ -44,7 +45,11 @@ def ask_question(payload: AskQuestion):
         ]
     }
     log.info(f'Saving question: {question}')
-    db.update_game_question(game_id, question, GameState.ASK_QUESTION)
+    db.update_game(game_id,
+                   question=question,
+                   gameState=GameState.ASK_QUESTION,
+                   taskToken=payload.taskToken,
+                   questionNo=Add(1))
     broadcast.send_game_state(game_id)
 
 

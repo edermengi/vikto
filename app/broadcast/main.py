@@ -4,7 +4,7 @@ from typing import List
 
 import boto3
 
-from broadcast.mapper import map_player_entities, map_topics, map_topic
+from broadcast.mapper import map_player_entities, map_topics, map_topic, map_winners
 from common import envs
 from common.model import WsApiBody, Actions, GameStateResponse, GameStateBroadcastPayload
 from common.storage import db
@@ -47,7 +47,8 @@ def send_game_state(game_id: str):
             game.gameState,
             game.question,
             topicOptions=map_topics(game.topicOptions),
-            topic=map_topic(game.topic)
+            topic=map_topic(game.topic),
+            winners=map_winners(game.winners, user_entities)
         )
     )
     send_to_users(notification, user_entities)

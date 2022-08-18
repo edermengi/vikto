@@ -1,7 +1,7 @@
 from typing import List, Dict
 
-from common.model import Player, Topic
-from common.storage.db import PlayerEntity, UserEntity, TopicOption
+from common.model import Player, Topic, Winner
+from common.storage.db import PlayerEntity, UserEntity, TopicOption, WinnerItem
 
 
 def map_player_entities(player_entities: List[PlayerEntity], user_entities: List[UserEntity]) -> List[Player]:
@@ -16,6 +16,21 @@ def map_player_entities(player_entities: List[PlayerEntity], user_entities: List
             online=len(users.get(pe.userId).connections or {}) > 0
         )
         for pe in player_entities
+    ]
+
+
+def map_winners(winners: List[WinnerItem], user_entities: List[UserEntity]) -> List[Winner]:
+    if winners is None:
+        return []
+    users: Dict[str, UserEntity] = {ue.userId: ue for ue in user_entities}
+    return [
+        Winner(
+            userId=pe.userId,
+            score=float(pe.score),
+            userName=users.get(pe.userId).userName,
+            avatar=users.get(pe.userId).avatar,
+        )
+        for pe in winners
     ]
 
 

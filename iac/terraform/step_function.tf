@@ -49,8 +49,13 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
             }
           },
           "ResultPath" : "$.result",
-          "Next" : "AskQuestion"
+          "Next" : "WaitBeforeAskQuestion"
         },
+        "WaitBeforeAskQuestion" : {
+          "Type" : "Wait",
+          "Seconds" : 1,
+          "Next" : "AskQuestion"
+        }
         "AskQuestion" : {
           "Type" : "Task",
           "Resource" : "arn:aws:states:::lambda:invoke.waitForTaskToken",
@@ -80,21 +85,21 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
         },
         "WaitBeforeChoice" : {
           "Type" : "Wait",
-          "Seconds" : 3,
+          "Seconds" : 2,
           "Next" : "ChoiceState"
         }
         "ChoiceState" : {
           "Type" : "Choice",
           "Choices" : [
             {
-              "Variable" : "$.remainingRounds",
-              "NumericGreaterThan" : 0,
-              "Next" : "AskTopic"
-            },
-            {
-              "Variable" : "$.remainingQuestions",
+              "Variable" : "$.result.Payload.remainingQuestions",
               "NumericGreaterThan" : 0,
               "Next" : "AskQuestion"
+            },
+            {
+              "Variable" : "$.result.Payload.remainingRounds",
+              "NumericGreaterThan" : 0,
+              "Next" : "AskTopic"
             }
           ],
           "Default" : "ShowWinner"
