@@ -172,8 +172,8 @@ class FactSheetEntity:
     id: str
     entity: str
     fileKey: str
-    columns: Set[str]
-    columnTypes: Dict[str, str]
+    columns: List[str] = None
+    columnTypes: Dict[str, str] = None
 
     def column_type(self, column: str):
         return self.columnTypes.get(column, 'string')

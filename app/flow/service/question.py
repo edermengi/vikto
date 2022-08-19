@@ -6,6 +6,7 @@ from common.service import broadcast
 from common.storage import db, fact_sheet
 from common.storage.db import QuizEntity, FactSheetEntity, GameState, QuizType
 from common.storage.db_util import Add
+from common.storage.str_util import replace_random_letters
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ class SelectOneComposer:
         log.info(f'Randomly picked answer {answer_row} and options {all_rows}')
         Random().shuffle(all_rows)
         question = {
+            'quizType': self.quiz.quizType,
             'question': self.quiz.question,
             'questionItem': answer_row[self.quiz.questionColumn],
             'questionItemType': self.sheet.column_type(self.quiz.questionColumn),
@@ -61,6 +63,32 @@ class SelectOneComposer:
         return question
 
 
+class TypeOneComposer:
+
+    def __init__(self, quiz: QuizEntity, sheet: FactSheetEntity):
+        self.quiz = quiz
+        self.sheet = sheet
+
+        pass
+
+    def compose_question(self):
+        sheet_rows = fact_sheet.load_sample_rows(self.sheet.fileKey, list(self.sheet.columns))
+        log.info(f'Loaded sheet {self.sheet.fileKey} of {len(sheet_rows)} sample rows')
+        row = Random().choice(sheet_rows)
+        answer = row[self.quiz.answerColumn]
+        answer_hint = replace_random_letters(answer, '.', 0.70)
+        question = {
+            'quizType': self.quiz.quizType,
+            'question': self.quiz.question,
+            'questionItem': row[self.quiz.questionColumn],
+            'questionItemType': self.sheet.column_type(self.quiz.questionColumn),
+            'title': self.quiz.title,
+            'answer': answer,
+            'answerHint': answer_hint
+        }
+        return question
+
+
 def ask_question(payload: AskQuestion):
     game_id = payload.gameId
 
@@ -74,6 +102,8 @@ def ask_question(payload: AskQuestion):
 
     if quiz.quizType == QuizType.SELECT_ONE:
         composer = SelectOneComposer(quiz, sheet)
+    elif quiz.quizType == QuizType.TYPE_ONE:
+        composer = TypeOneComposer(quiz, sheet)
     else:
         raise ValueError(f'Unsupported quiz type {quiz.quizType}')
 
