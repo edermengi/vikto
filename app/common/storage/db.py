@@ -142,6 +142,7 @@ class UserEntity:
 
 class QuizType(str, Enum):
     SELECT_ONE = "SELECT_ONE"
+    TYPE_ONE = "TYPE_ONE"
 
 
 @dataclass
