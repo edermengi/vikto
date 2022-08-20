@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 
 def _answer_match(player: PlayerEntity, correct_answer: str):
-    return correct_answer is not None and correct_answer == player.answer
+    return correct_answer is not None and correct_answer.upper() == player.answer.upper()
 
 
 class SelectOneChecker:
