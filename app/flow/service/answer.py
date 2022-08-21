@@ -4,7 +4,7 @@ from typing import List
 
 from common.model import ShowAnswer
 from common.service import broadcast
-from common.storage import db
+from common.storage import db, util
 from common.storage.db import PlayerEntity, GameState, GameEntity, QuizType
 from flow.service import lev
 
@@ -12,7 +12,9 @@ log = logging.getLogger(__name__)
 
 
 def _answer_match(player: PlayerEntity, correct_answer: str):
-    return correct_answer is not None and correct_answer.upper() == player.answer.upper()
+    return correct_answer is not None and \
+           player.answer is not None and \
+           correct_answer.upper() == player.answer.upper()
 
 
 class SelectOneChecker:
@@ -20,6 +22,7 @@ class SelectOneChecker:
     def __init__(self, game: GameEntity, players: List[PlayerEntity]):
         self.game = game
         self.players = players
+        self.wait_seconds = 5
 
     def update_results(self):
         correct_answer = self.game.question['answer']
@@ -54,6 +57,7 @@ class TypeOneChecker:
     def __init__(self, game: GameEntity, players: List[PlayerEntity]):
         self.game = game
         self.players = players
+        self.wait_seconds = 20
 
     def update_results(self):
         correct_answer = self.game.question['answer'].upper()
@@ -103,9 +107,13 @@ def show_answer(payload: ShowAnswer):
     log.info(f'Update game state and answer results')
     db.update_game(game_id,
                    question=question,
-                   gameState=GameState.SHOW_ANSWER)
+                   gameState=GameState.SHOW_ANSWER,
+                   timerStart=util.now_timestamp(),
+                   timerSeconds=checker.wait_seconds)
     log.info(f'Broadcast results')
     broadcast.send_game_state(game_id)
     return {
         'remainingRounds': game.totalNumberOfRounds - game.roundNo,
-        'remainingQuestions': game.totalNumberOfQuestions - game.questionNo}
+        'remainingQuestions': game.totalNumberOfQuestions - game.questionNo,
+        'waitSeconds': checker.wait_seconds
+    }

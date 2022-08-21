@@ -103,6 +103,8 @@ class GameEntity(Entity):
     topicOptions: List[TopicOption] = None
     topic: TopicOption = None
     winners: List[WinnerItem] = None
+    timerStart: int = None
+    timerSeconds: int = None
 
     def __post_init__(self):
         if self.topicOptions is not None and len(self.topicOptions) > 0 and isinstance(self.topicOptions[0], dict):

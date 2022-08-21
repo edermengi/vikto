@@ -3,12 +3,14 @@ from random import Random
 
 from common.model import AskQuestion
 from common.service import broadcast
-from common.storage import db, fact_sheet
+from common.storage import db, fact_sheet, util
 from common.storage.db import QuizEntity, FactSheetEntity, GameState, QuizType
 from common.storage.db_util import Add
 from common.storage.str_util import replace_random_letters
 
 log = logging.getLogger(__name__)
+
+WAIT_SECONDS = 300
 
 
 class SelectOneComposer:
@@ -17,6 +19,7 @@ class SelectOneComposer:
     def __init__(self, quiz: QuizEntity, sheet: FactSheetEntity):
         self.quiz = quiz
         self.sheet = sheet
+        self.wait_seconds = WAIT_SECONDS
 
     @staticmethod
     def _pick_answer_and_questions(sheet_rows, answer_column, question_column):
@@ -68,8 +71,7 @@ class TypeOneComposer:
     def __init__(self, quiz: QuizEntity, sheet: FactSheetEntity):
         self.quiz = quiz
         self.sheet = sheet
-
-        pass
+        self.wait_seconds = WAIT_SECONDS
 
     def compose_question(self):
         sheet_rows = fact_sheet.load_sample_rows(self.sheet.fileKey, list(self.sheet.columns))
@@ -114,5 +116,7 @@ def ask_question(payload: AskQuestion):
                    question=question,
                    gameState=GameState.ASK_QUESTION,
                    taskToken=payload.taskToken,
-                   questionNo=Add(1))
+                   questionNo=Add(1),
+                   timerStart=util.now_timestamp(),
+                   timerSeconds=composer.wait_seconds)
     broadcast.send_game_state(game_id)

@@ -177,6 +177,11 @@ class GameStateResponse(ApiResponse):
     topicOptions: List[Topic] = None
     topic: Topic = None
     winners: List[Winner] = None
+    timerSeconds: int = None
+    totalNumberOfRounds: int = None
+    totalNumberOfQuestions: int = None
+    roundNo: int = None
+    questionNo: int = None
     # question: Question = None
 
 

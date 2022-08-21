@@ -4,7 +4,7 @@ from typing import List
 
 from common.model import AskTopic, ShowTopic
 from common.service import broadcast
-from common.storage import db
+from common.storage import db, util
 from common.storage.db import TopicOption, GameState
 from common.storage.db_util import Add
 
@@ -12,6 +12,8 @@ log = logging.getLogger(__name__)
 
 # How many topics to select from
 OPTION_TOPICS_SIZE = 6
+
+WAIT_SECONDS = 30
 
 
 def ask_topic(payload: AskTopic):
@@ -28,7 +30,9 @@ def ask_topic(payload: AskTopic):
                    gameState=GameState.ASK_TOPIC,
                    taskToken=payload.taskToken,
                    roundNo=Add(1),
-                   questionNo=0)
+                   questionNo=0,
+                   timerStart=util.now_timestamp(),
+                   timerSeconds=WAIT_SECONDS)
     log.info(f'Broadcast ask topic state')
     broadcast.send_game_state(game_id)
 

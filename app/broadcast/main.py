@@ -48,7 +48,12 @@ def send_game_state(game_id: str):
             game.question,
             topicOptions=map_topics(game.topicOptions),
             topic=map_topic(game.topic),
-            winners=map_winners(game.winners, user_entities)
+            winners=map_winners(game.winners, user_entities),
+            timerSeconds=game.timerSeconds,
+            totalNumberOfRounds=game.totalNumberOfRounds,
+            totalNumberOfQuestions=game.totalNumberOfQuestions,
+            roundNo=game.roundNo,
+            questionNo=game.questionNo
         )
     )
     send_to_users(notification, user_entities)

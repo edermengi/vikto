@@ -36,7 +36,15 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
             }
           },
           "ResultPath" : "$.result",
-          "Next" : "ShowTopic"
+          "Next" : "ShowTopic",
+          "TimeoutSeconds" : 30,
+          "Catch" : [
+            {
+              "ErrorEquals" : ["States.Timeout"],
+              "ResultPath": "$.error",
+              "Next" : "ShowTopic"
+            }
+          ]
         },
         "ShowTopic" : {
           "Type" : "Task",
@@ -68,7 +76,15 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
             }
           },
           "ResultPath" : "$.result",
-          "Next" : "ShowAnswer"
+          "Next" : "ShowAnswer",
+          "TimeoutSeconds" : 300,
+          "Catch" : [
+            {
+              "ErrorEquals" : ["States.Timeout"],
+              "ResultPath": "$.error",
+              "Next" : "ShowAnswer"
+            }
+          ]
         },
         "ShowAnswer" : {
           "Type" : "Task",
@@ -85,7 +101,7 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
         },
         "WaitBeforeChoice" : {
           "Type" : "Wait",
-          "Seconds" : 5,
+          "SecondsPath" : "$.result.Payload.waitSeconds",
           "Next" : "ChoiceState"
         }
         "ChoiceState" : {
