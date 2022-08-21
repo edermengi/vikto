@@ -1,10 +1,12 @@
 import logging
+from decimal import Decimal
 from typing import List
 
 from common.model import ShowAnswer
 from common.service import broadcast
 from common.storage import db
 from common.storage.db import PlayerEntity, GameState, GameEntity, QuizType
+from flow.service import lev
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +36,7 @@ class SelectOneChecker:
                 if no_of_correct_answers > 1 and min_answer_time == player.answerTime:
                     log.info(f'Player {player.userId} answered first')
                     increment += 0.5
-            db.update_player_score(self.game.gameId, player.userId, increment)
+            db.update_player_score(self.game.gameId, player.userId, Decimal(increment))
 
         for answer_option in self.game.question['answerOptions']:
             if answer_option.get('answer') == correct_answer:
@@ -54,26 +56,29 @@ class TypeOneChecker:
         self.players = players
 
     def update_results(self):
-        correct_answer = self.game.question['answer']
+        correct_answer = self.game.question['answer'].upper()
 
-        no_of_correct_answers = sum([1 for p in self.players if _answer_match(p, correct_answer)])
-        min_answer_time = min([p.answerTime for p in self.players if _answer_match(p, correct_answer)] or [-1])
+        min_answer_time = min([p.answerTime for p in self.players] or [-1])
 
-        log.info(f'Calculate scores for {self.players}')
+        log.info(f'Calculate scores for game {self.game.gameId} and correct answer {correct_answer}')
+        answers = []
         for player in self.players:
-            increment = 0.0
-            if _answer_match(player, correct_answer):
-                log.info(f'Player {player.userId} answered correctly')
-                increment += 1.0
-                if no_of_correct_answers > 1 and min_answer_time == player.answerTime:
-                    log.info(f'Player {player.userId} answered first')
-                    increment += 0.5
-            db.update_player_score(self.game.gameId, player.userId, increment)
-        answers = [{
-            'answer': p.answer,
-            'userId': p.userId
+            player_answer = player.answer.upper() if player.answer else None
+            increment = lev.lev_percentage(correct_answer, player_answer) * 2
+            log.info(f'Players score fo the answer {player_answer} is  {increment}')
 
-        } for p in self.players]
+            if len(self.players) > 1 and min_answer_time == player.answerTime:
+                log.info(f'Player {player.userId} answered first')
+                increment += 0.5
+
+            dec_incr = Decimal(format(increment, '.2g'))
+            db.update_player_score(self.game.gameId, player.userId, dec_incr)
+            answers.append({
+                'answer': player_answer,
+                'userId': player.userId,
+                'score': dec_incr
+            })
+
         self.game.question['answers'] = answers
         return self.game.question
 

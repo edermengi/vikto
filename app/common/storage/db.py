@@ -421,12 +421,12 @@ def update_player_answer(game_id: str, user_id: str, answer: str, answer_time: i
     )
 
 
-def update_player_score(game_id, user_id, increment: float):
+def update_player_score(game_id, user_id, increment: Decimal):
     _game_table().update_item(
         Key={'gameId': game_id, 'entity': Entities.player(user_id)},
         UpdateExpression='ADD score :increment SET answer = :answer, answerTime = :answerTime',
         ExpressionAttributeValues={
-            ':increment': Decimal(increment),
+            ':increment': increment,
             ':answer': None,
             ':answerTime': None
         }

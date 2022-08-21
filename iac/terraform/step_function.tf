@@ -85,7 +85,7 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
         },
         "WaitBeforeChoice" : {
           "Type" : "Wait",
-          "Seconds" : 2,
+          "Seconds" : 5,
           "Next" : "ChoiceState"
         }
         "ChoiceState" : {
