@@ -123,6 +123,8 @@ class Player:
     avatar: str
     online: bool
     ready: bool
+    topicVote: str
+    answered: bool
     score: float = 0.0
 
 

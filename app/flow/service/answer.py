@@ -6,6 +6,7 @@ from common.model import ShowAnswer
 from common.service import broadcast
 from common.storage import db, util
 from common.storage.db import PlayerEntity, GameState, GameEntity, QuizType
+from common.storage.db_util import Add
 from flow.service import lev
 
 log = logging.getLogger(__name__)
@@ -39,7 +40,8 @@ class SelectOneChecker:
                 if no_of_correct_answers > 1 and min_answer_time == player.answerTime:
                     log.info(f'Player {player.userId} answered first')
                     increment += 0.5
-            db.update_player_score(self.game.gameId, player.userId, Decimal(increment))
+            db.update_player(self.game.gameId, player.userId,
+                             score=Add(Decimal(increment)), answer=None, answerTime=None)
 
         for answer_option in self.game.question['answerOptions']:
             if answer_option.get('answer') == correct_answer:
@@ -76,7 +78,8 @@ class TypeOneChecker:
                 increment += 0.5
 
             dec_incr = Decimal(format(increment, '.2g'))
-            db.update_player_score(self.game.gameId, player.userId, dec_incr)
+            db.update_player(self.game.gameId, player.userId,
+                             score=Add(dec_incr), answer=None, answerTime=None)
             answers.append({
                 'answer': player_answer,
                 'userId': player.userId,

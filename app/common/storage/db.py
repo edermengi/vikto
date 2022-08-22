@@ -116,7 +116,7 @@ class GameEntity(Entity):
 
 
 @dataclass
-class PlayerEntity:
+class PlayerEntity(Entity):
     gameId: str
     userId: str
     joinedAt: str
@@ -341,18 +341,6 @@ def get_user_connections(user_ids: List[str]):
     return connections
 
 
-def update_ready_status(game_id: str, user_id: str) -> PlayerEntity:
-    response = _game_table().update_item(
-        Key={'gameId': game_id, 'entity': Entities.player(user_id)},
-        UpdateExpression='SET ready = :ready',
-        ExpressionAttributeValues={
-            ':ready': True
-        },
-        ReturnValues='ALL_NEW'
-    )
-    return PlayerEntity(**response['Attributes'])
-
-
 def get_game(game_id: str) -> GameEntity:
     response = _game_table().get_item(
         Key={'gameId': game_id, 'entity': Entities.GAME}
@@ -402,13 +390,11 @@ def update_game(game_id: str, **kwargs):
     )
 
 
-def update_player_topic_vote(game_id: str, user_id: str, topic: str):
+def update_player(game_id: str, user_id: str, **kwargs):
+    upd_args = update_expression(PlayerEntity, **kwargs)
     _game_table().update_item(
         Key={'gameId': game_id, 'entity': Entities.player(user_id)},
-        UpdateExpression='SET topicVote = :topicVote',
-        ExpressionAttributeValues={
-            ':topicVote': topic
-        }
+        **upd_args
     )
 
 
@@ -423,13 +409,3 @@ def update_player_answer(game_id: str, user_id: str, answer: str, answer_time: i
     )
 
 
-def update_player_score(game_id, user_id, increment: Decimal):
-    _game_table().update_item(
-        Key={'gameId': game_id, 'entity': Entities.player(user_id)},
-        UpdateExpression='ADD score :increment SET answer = :answer, answerTime = :answerTime',
-        ExpressionAttributeValues={
-            ':increment': increment,
-            ':answer': None,
-            ':answerTime': None
-        }
-    )

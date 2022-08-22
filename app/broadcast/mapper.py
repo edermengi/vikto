@@ -11,6 +11,8 @@ def map_player_entities(player_entities: List[PlayerEntity], user_entities: List
             userId=pe.userId,
             ready=pe.ready,
             score=float(pe.score),
+            topicVote=pe.topicVote,
+            answered=pe.answerTime is not None,
             userName=users.get(pe.userId).userName,
             avatar=users.get(pe.userId).avatar,
             online=len(users.get(pe.userId).connections or {}) > 0

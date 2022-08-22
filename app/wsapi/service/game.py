@@ -35,13 +35,15 @@ def ready(req: ReadyRequest):
     game_id = req.gameId
     user_id = req.userId
 
-    db.update_ready_status(game_id, user_id)
+    db.update_player(game_id, user_id, ready=True)
+    broadcast.send_players_state(game_id)
     players = db.get_active_players(game_id)
     ready_no = sum(p.ready for p in players)
     if ready_no >= min(2, len(players)):
         game = db.get_game(game_id)
         sfn.send_task_success(game.taskToken)
         db.update_game(game_id, taskToken=None)
+
     return ReadyResponse()
 
 
@@ -50,7 +52,8 @@ def answer(req: AnswerRequest):
     user_id = req.userId
     answer_ = req.answer
 
-    db.update_player_answer(game_id, user_id, answer_, util.now_timestamp())
+    db.update_player(game_id, user_id, answer=answer_, answerTime=util.now_timestamp())
+    broadcast.send_players_state(game_id)
     players = db.get_active_players(game_id)
     all_answered = all([p.answer is not None for p in players])
     if all_answered:
@@ -63,11 +66,12 @@ def choose_topic(req: ChooseTopicRequest):
     user_id = req.userId
     topic = req.topic
 
-    db.update_player_topic_vote(game_id, user_id, topic)
-    players = db.get_active_players(game_id)
-    all_voted = all([p.topicVote is not None for p in players])
-    if all_voted:
-        game = db.get_game(game_id)
-        sfn.send_task_success(game.taskToken)
+    db.update_player(game_id, user_id, topicVote=topic)
+    broadcast.send_players_state(game_id)
+    # players = db.get_active_players(game_id)
+    # all_voted = all([p.topicVote for p in players])
+    # if all_voted:
+    #     game = db.get_game(game_id)
+    #     sfn.send_task_success(game.taskToken)
 
     return None

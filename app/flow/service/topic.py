@@ -33,6 +33,11 @@ def ask_topic(payload: AskTopic):
                    questionNo=0,
                    timerStart=util.now_timestamp(),
                    timerSeconds=WAIT_SECONDS)
+    players = db.get_active_players(game_id)
+    log.info(f'Clean previous topic votes')
+    for player in players:
+        db.update_player(game_id, player.userId, topicVote=None)
+
     log.info(f'Broadcast ask topic state')
     broadcast.send_game_state(game_id)
 
@@ -56,10 +61,6 @@ def show_topic(payload: ShowTopic):
     if len(topics) == 0:
         topics = [t.topic for t in game.topicOptions]
     topic = _determine_winner_topic(topics, game.topicOptions)
-
-    log.info(f'Clean topic votes')
-    for player in players:
-        db.update_player_topic_vote(game_id, player.userId, '')
 
     log.info(f'Update game state and topic winner {topic}')
     db.update_game(game_id,
