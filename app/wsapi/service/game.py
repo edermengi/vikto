@@ -16,7 +16,6 @@ def new_game(req: NewGameRequest) -> NewGameResponse:
     game_id = random_game_id()
     db.create_game(game_id, req.userId)
     db.join_game(game_id, req.userId)
-    broadcast.send_game_state(game_id)
     sfn.start(game_id)
 
     return NewGameResponse(game_id)
@@ -27,7 +26,7 @@ def join_game(req: JoinGameRequest) -> JoinGameResponse:
     user_id = req.userId
 
     db.join_game(game_id, user_id)
-    broadcast.send_game_state(game_id)
+    broadcast.send_game_state(game_id, user_id)
 
     return JoinGameResponse(game_id)
 

@@ -62,7 +62,7 @@ class TypeOneChecker:
     def update_results(self):
         correct_answer = self.game.question['answer'].upper()
 
-        min_answer_time = min([p.answerTime for p in self.players] or [-1])
+        min_answer_time = min([p.answerTime for p in self.players if p.answerTime] or [-1])
 
         log.info(f'Calculate scores for game {self.game.gameId} and correct answer {correct_answer}')
         answers = []

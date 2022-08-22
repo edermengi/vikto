@@ -32,6 +32,7 @@ package:  package_wsapi package_broadcast package_flow
 test:
 	cd app/common && python -m unittest discover -v -s ./test -t ..
 	cd app/flow && python -m unittest discover -v -s ./test -t ..
+	cd app/broadcast && python -m unittest discover -v -s ./test -t ..
 
 # run it only once on new account
 init_terraform_infrastructure:

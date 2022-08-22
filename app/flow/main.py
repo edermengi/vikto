@@ -1,7 +1,7 @@
 import logging
 
 from common import log
-from common.model import WaitPlayersReady, parse_sf_payload, AskQuestion, ShowAnswer, AskTopic, ShowTopic, ShowWinner
+from common.model import WaitPlayersReady, AskQuestion, ShowAnswer, AskTopic, ShowTopic, ShowWinner, SfPayload
 from flow.service import wait, question, answer, topic, winner
 
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +11,7 @@ logging.info('Test')
 
 def handler(event, _):
     log.info(f'{event}')
-    payload = parse_sf_payload(event)
+    payload = SfPayload.parse(event)
     if isinstance(payload, WaitPlayersReady):
         response = wait.on_wait_players_ready(payload)
     elif isinstance(payload, AskTopic):

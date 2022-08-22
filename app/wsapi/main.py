@@ -1,7 +1,7 @@
 from common import log
 from common.model import parse_ws_request, ConnectRequest, DisconnectRequest, UpdateUserRequest, \
     NewGameRequest, WsApiResponse, ApiResponse, WsApiBody, JoinGameRequest, ReadyRequest, AnswerRequest, \
-    ChooseTopicRequest
+    ChooseTopicRequest, RegisterUserRequest
 from wsapi.service import user, game
 
 
@@ -15,6 +15,8 @@ def handler(event, context):
         resp = user.create_session(req)
     elif isinstance(req, DisconnectRequest):
         resp = user.close_session(req)
+    elif isinstance(req, RegisterUserRequest):
+        resp = user.register_user(req)
     elif isinstance(req, UpdateUserRequest):
         resp = user.update_user(req)
     elif isinstance(req, NewGameRequest):

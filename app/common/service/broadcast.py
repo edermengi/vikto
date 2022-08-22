@@ -1,11 +1,10 @@
 import functools
 import json
-from dataclasses import asdict
 
 import boto3
 
 from common import envs
-from common.model import GameStateBroadcastPayload
+from common.model import GameStateBroadcastPayload, PlayersStateBroadcastPayload
 
 
 @functools.cache
@@ -13,8 +12,15 @@ def _lambda(_=''):
     return boto3.client('lambda')
 
 
-def send_game_state(game_id: str):
+def send_game_state(game_id: str, user_id: str = None):
     _lambda().invoke_async(
         FunctionName=envs.BROADCAST_LAMBDA_NAME,
-        InvokeArgs=json.dumps(asdict(GameStateBroadcastPayload(game_id)))
+        InvokeArgs=json.dumps(GameStateBroadcastPayload(game_id, user_id).asjson())
+    )
+
+
+def send_players_state(game_id: str):
+    _lambda().invoke_async(
+        FunctionName=envs.BROADCAST_LAMBDA_NAME,
+        InvokeArgs=json.dumps(PlayersStateBroadcastPayload(game_id).asjson())
     )

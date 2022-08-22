@@ -2,12 +2,13 @@ import json
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
-from typing import List, ClassVar
+from typing import List, ClassVar, Type
 
 
 class Actions(str, Enum):
     CONNECT = '$connect'
     DISCONNECT = '$disconnect'
+    REGISTER_USER = '$registerUser'
     UPDATE_USER = '$updateUser'
     NEW_GAME = "$newGame"
     JOIN_GAME = "$joinGame"
@@ -16,7 +17,8 @@ class Actions(str, Enum):
     CHOOSE_TOPIC = "$chooseTopic"
     EXIT_GAME = "$exitGame",
     CHOOSE_THEME = "$chooseTheme"
-    GAME_STATE_NOTIFICATION = "$gameStateNotification"
+    GAME_STATE_NOTIFICATION = "$gamePush"
+    PLAYERS_STATE_NOTIFICATION = "$playersPush"
 
 
 @dataclass
@@ -44,6 +46,13 @@ class ConnectRequest(WsApiRequest):
 @dataclass
 class DisconnectRequest(WsApiRequest):
     pass
+
+
+@dataclass
+class RegisterUserRequest(WsApiRequest):
+    userId: str
+    userName: str
+    avatar: str
 
 
 @dataclass
@@ -186,7 +195,33 @@ class GameStateResponse(ApiResponse):
 
 
 @dataclass
-class GameStateBroadcastPayload:
+class PlayersStateResponse(ApiResponse):
+    gameId: str
+    players: List[Player]
+
+
+@dataclass
+class BroadcastPayload:
+    event: ClassVar[str]
+
+    @staticmethod
+    def parse(payload: dict):
+        return parse_payload(BroadcastPayload, 'event', payload)
+
+    def asjson(self):
+        return {'event': self.event, **asdict(self)}
+
+
+@dataclass
+class GameStateBroadcastPayload(BroadcastPayload):
+    event: ClassVar[str] = "broadcastGame"
+    gameId: str
+    userId: str = None
+
+
+@dataclass
+class PlayersStateBroadcastPayload(BroadcastPayload):
+    event: ClassVar[str] = "broadcastPlayers"
     gameId: str
 
 
@@ -198,6 +233,10 @@ class GameStepFunctionInput:
 @dataclass
 class SfPayload:
     event: ClassVar[str]
+
+    @staticmethod
+    def parse(payload: dict):
+        return parse_payload(SfPayload, 'event', payload)
 
 
 @dataclass
@@ -259,6 +298,8 @@ def parse_ws_request(event):
     elif req.route_key == '$disconnect':
         return DisconnectRequest(**asdict(req))
     elif req.route_key == '$default':
+        if req.action == Actions.REGISTER_USER:
+            return UpdateUserRequest(**asdict(req), **req.data)
         if req.action == Actions.UPDATE_USER:
             return UpdateUserRequest(**asdict(req), **req.data)
         elif req.action == Actions.NEW_GAME:
@@ -275,13 +316,13 @@ def parse_ws_request(event):
         raise Exception(f'Unexpected route {req.route_key} and action {req.action}')
 
 
-def parse_sf_payload(payload: dict):
-    event = payload.get('event')
+def parse_payload(cls: Type, type_field: str, payload: dict):
+    event = payload.get(type_field)
     if event is None:
-        raise ValueError(f'Unable to parse payload. There is no event property in {payload}')
+        raise ValueError(f'Unable to parse payload. There is no {type_field} property in {payload}')
 
-    for payload_cls in SfPayload.__subclasses__():
-        if payload_cls.event == event:
-            return payload_cls(**{k: payload[k] for k in payload if k != 'event'})
+    for payload_cls in cls.__subclasses__():
+        if getattr(payload_cls, type_field) == event:
+            return payload_cls(**{k: payload[k] for k in payload if k != type_field})
 
-    raise ValueError(f'Unable to parse payload. There is no corresponding class for event [{event}]')
+    raise ValueError(f'Unable to parse payload. There is no corresponding class for [{event}]')
