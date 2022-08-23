@@ -397,15 +397,3 @@ def update_player(game_id: str, user_id: str, **kwargs):
         **upd_args
     )
 
-
-def update_player_answer(game_id: str, user_id: str, answer: str, answer_time: int):
-    _game_table().update_item(
-        Key={'gameId': game_id, 'entity': Entities.player(user_id)},
-        UpdateExpression='SET answer = :answer, answerTime = :answerTime',
-        ExpressionAttributeValues={
-            ':answer': answer,
-            ':answerTime': answer_time
-        }
-    )
-
-
