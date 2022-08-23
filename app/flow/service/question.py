@@ -1,4 +1,5 @@
 import logging
+import re
 from random import Random
 
 from common.model import AskQuestion
@@ -91,6 +92,36 @@ class TypeOneComposer:
         return question
 
 
+class TypeOneFromSetComposer:
+
+    def __init__(self, quiz: QuizEntity, sheet: FactSheetEntity):
+        self.quiz = quiz
+        self.sheet = sheet
+        self.wait_seconds = WAIT_SECONDS
+
+    def compose_question(self):
+        sheet_rows = fact_sheet.load_sample_rows(self.sheet.fileKey, list(self.sheet.columns))
+        log.info(f'Loaded sheet {self.sheet.fileKey} of {len(sheet_rows)} sample rows')
+        row = Random().choice(sheet_rows)
+
+        variants = row[self.quiz.answerColumn]
+        variants = variants.upper()
+
+        all_options = [variant.strip() for variant in re.split('[,;]', variants) if variant]
+        question_item = Random().choice(all_options)
+        answers = [option for option in all_options if option != question_item]
+
+        question = {
+            'quizType': self.quiz.quizType,
+            'question': self.quiz.question,
+            'questionItem': question_item,
+            'questionItemType': self.sheet.column_type(self.quiz.questionColumn),
+            'title': self.quiz.title,
+            'answer': ",".join(answers),
+        }
+        return question
+
+
 def ask_question(payload: AskQuestion):
     game_id = payload.gameId
 
@@ -106,6 +137,8 @@ def ask_question(payload: AskQuestion):
         composer = SelectOneComposer(quiz, sheet)
     elif quiz.quizType == QuizType.TYPE_ONE:
         composer = TypeOneComposer(quiz, sheet)
+    elif quiz.quizType == QuizType.TYPE_ONE_FROM_SET:
+        composer = TypeOneFromSetComposer(quiz, sheet)
     else:
         raise ValueError(f'Unsupported quiz type {quiz.quizType}')
 
