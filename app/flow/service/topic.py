@@ -11,7 +11,7 @@ from common.storage.db_util import Add
 log = logging.getLogger(__name__)
 
 # How many topics to select from
-OPTION_TOPICS_SIZE = 6
+OPTION_TOPICS_SIZE = 9
 
 WAIT_SECONDS = 30
 
@@ -21,7 +21,7 @@ def ask_topic(payload: AskTopic):
 
     all_topics = db.get_topics('RU')
     log.info(f'Found {len(all_topics)} topics')
-    topics = Random().sample(all_topics, OPTION_TOPICS_SIZE)
+    topics = Random().sample(all_topics, min(OPTION_TOPICS_SIZE, len(all_topics)))
 
     topic_options = [TopicOption(topic=t.entity, title=t.title, image=t.image) for t in topics]
     log.info(f'Randomly picked topics {topic_options}')
