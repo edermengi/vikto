@@ -301,7 +301,7 @@ def parse_ws_request(event):
         return DisconnectRequest(**asdict(req))
     elif req.route_key == '$default':
         if req.action == Actions.REGISTER_USER:
-            return UpdateUserRequest(**asdict(req), **req.data)
+            return RegisterUserRequest(**asdict(req), **req.data)
         if req.action == Actions.UPDATE_USER:
             return UpdateUserRequest(**asdict(req), **req.data)
         elif req.action == Actions.NEW_GAME:

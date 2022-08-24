@@ -35,18 +35,20 @@ def update_expression(cls, **kwargs):
     set_statements = []
     add_statements = []
     del_statements = []
+    attr_names = {}
     attr_values = {}
     for prop, value in kwargs.items():
         if prop not in entity_fields.keys():
             raise ValueError(f'Field [{prop}] is not in {cls}')
 
         if isinstance(value, Add):
-            add_statements.append(f'{prop} :{prop}')
+            add_statements.append(f'#{prop} :{prop}')
         elif isinstance(value, Del):
-            del_statements.append(f'{prop} :{prop}')
+            del_statements.append(f'#{prop} :{prop}')
         else:
-            set_statements.append(f'{prop} = :{prop}')
+            set_statements.append(f'#{prop} = :{prop}')
 
+        attr_names[f'#{prop}'] = prop
         attr_values[f':{prop}'] = _to_dynamodb_type(value)
     update_expressions = []
     if len(set_statements) > 0:
@@ -58,5 +60,7 @@ def update_expression(cls, **kwargs):
 
     return {
         'UpdateExpression': " ".join(update_expressions),
-        'ExpressionAttributeValues': attr_values
+        'ExpressionAttributeValues': attr_values,
+        'ExpressionAttributeNames': attr_names
+
     }

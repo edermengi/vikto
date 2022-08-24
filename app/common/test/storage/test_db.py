@@ -19,13 +19,18 @@ class DbTestCase(unittest.TestCase):
             roundNo=Add(1)
         )
         expected = {
-            'UpdateExpression': 'SET question = :question, topicOptions = :topicOptions ADD roundNo :roundNo',
+            'UpdateExpression': 'SET #question = :question, #topicOptions = :topicOptions ADD #roundNo :roundNo',
             'ExpressionAttributeValues': {
                 ':question': None,
                 ':roundNo': 1,
                 ':topicOptions': [
                     {'topic': 'topic', 'title': 'title', 'image': 'image'}
-                ]}
+                ]},
+            'ExpressionAttributeNames': {
+                '#question': 'question',
+                '#topicOptions': 'topicOptions',
+                '#roundNo': 'roundNo'
+            }
         }
         self.assertEqual(expected, actual)
 
@@ -35,9 +40,12 @@ class DbTestCase(unittest.TestCase):
             connections=Del({'connection'})
         )
         expected = {
-            'UpdateExpression': 'DELETE connections :connections',
+            'UpdateExpression': 'DELETE #connections :connections',
             'ExpressionAttributeValues': {
                 ':connections': {'connection'}
+            },
+            'ExpressionAttributeNames': {
+                '#connections': 'connections'
             }
         }
         self.assertEqual(expected, actual)

@@ -46,12 +46,17 @@ class QuizIds:
 
 
 @dataclass
-class SessionEntity:
+class Entity:
+    # todo implement __post_init__ to initialize dataclass properties
+    pass
+
+
+@dataclass
+class SessionEntity(Entity):
     connectionId: str
     sourceIp: str
     connectedAt: str
     entity: str = Entities.SESSION
-    active: bool = True
     userId: str = None
     userName: str = None
     ttl: int = util.ttl()
@@ -77,12 +82,6 @@ class TopicOption:
 class WinnerItem:
     userId: str
     score: Decimal
-
-
-@dataclass
-class Entity:
-    # todo implement __post_init__ to initialize dataclass properties
-    pass
 
 
 @dataclass
@@ -134,11 +133,11 @@ class PlayerEntity(Entity):
 class UserEntity:
     userId: str
     userName: str
-    lastActiveAt: str
     avatar: str = "1 13 5 3 0 1 8 4 2 10 3"
     connections: Set[str] = None
     entity: str = Entities.USER
     gameId: str = None
+    lastActiveAt: str = None
     ttl: int = util.ttl()
 
 
@@ -217,22 +216,19 @@ def create_session(connection_id: str, source_ip: str, connected_at: str):
     _session_table().put_item(Item=asdict(session))
 
 
-def delete_session(connection_id: str, user_id=None) -> UserEntity:
-    response = _session_table().delete_item(
+def get_session(connection_id: str) -> SessionEntity:
+    response = _session_table().get_item(
         Key={'connectionId': connection_id, 'entity': Entities.SESSION},
-        ReturnValues='ALL_OLD'
     )
-    if not user_id and response.get('Attributes'):
-        user_id = response['Attributes']['userId']
-    resp = _user_table().update_item(
-        Key={'userId': user_id, 'entity': Entities.USER},
-        UpdateExpression='DELETE connections :connection',
-        ExpressionAttributeValues={
-            ':connection': {connection_id}
-        },
-        ReturnValues='ALL_NEW'
+    item = response.get('Item')
+    if item:
+        return SessionEntity(**item)
+
+
+def delete_session(connection_id: str):
+    _session_table().delete_item(
+        Key={'connectionId': connection_id, 'entity': Entities.SESSION}
     )
-    return UserEntity(**resp['Attributes'])
 
 
 def get_users(user_ids: List[str]) -> List[UserEntity]:
@@ -248,40 +244,22 @@ def get_user(user_id: str) -> UserEntity:
         return UserEntity(**item)
 
 
-def update_user(connection_id: str, user_id: str, user_name: str, avatar: str) -> UserEntity:
+def update_session(connection_id: str, **kwargs):
+    upd_args = update_expression(SessionEntity, **kwargs)
+
     _session_table().update_item(
         Key={'connectionId': connection_id, 'entity': Entities.SESSION},
-        UpdateExpression='SET userName = :nm, userId = :userId',
-        ExpressionAttributeValues={
-            ':nm': user_name,
-            ':userId': user_id
-        },
-        ReturnValues='ALL_NEW'
+        **upd_args
     )
-    try:
-        resp = _user_table().put_item(
-            Item=asdict(UserEntity(user_id, user_name, util.now_iso(), avatar, {connection_id})),
-            ConditionExpression=Attr('userId').not_exists(),
-            ReturnValues='ALL_OLD'
-        )
-        return UserEntity(**resp['Attributes'])
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
-            resp = _user_table().update_item(
-                Key={'userId': user_id, 'entity': Entities.USER},
-                UpdateExpression='SET userName = :nm, lastActiveAt = :lastActiveAt, avatar = :avatar '
-                                 'ADD connections :connection',
-                ExpressionAttributeValues={
-                    ':nm': user_name,
-                    ':avatar': avatar,
-                    ':lastActiveAt': util.now_iso(),
-                    ':connection': {connection_id}
-                },
-                ReturnValues='ALL_NEW'
-            )
-            return UserEntity(**resp['Attributes'])
-        else:
-            raise e
+
+
+def update_user(user_id: str, **kwargs):
+    upd_args = update_expression(UserEntity, **kwargs)
+
+    _user_table().update_item(
+        Key={'userId': user_id, 'entity': Entities.USER},
+        **upd_args
+    )
 
 
 def create_game(game_id: str, user_id: str):
@@ -331,15 +309,6 @@ def get_active_player(game_id: str, user_id: str) -> PlayerEntity:
     item = response.get('Item')
     if item:
         return PlayerEntity(**item)
-
-
-def get_user_connections(user_ids: List[str]):
-    connections = []
-    for user_id in user_ids:
-        user_entity = get_user(user_id)
-        if user_entity.connections:
-            connections += user_entity.connections
-    return connections
 
 
 def get_game(game_id: str) -> GameEntity:
@@ -397,4 +366,3 @@ def update_player(game_id: str, user_id: str, **kwargs):
         Key={'gameId': game_id, 'entity': Entities.player(user_id)},
         **upd_args
     )
-

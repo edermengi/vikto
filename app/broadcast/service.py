@@ -10,6 +10,7 @@ from common.model import WsApiBody, Actions, GameStateResponse, PlayersStateResp
     PlayersStateBroadcastPayload
 from common.storage import db, util
 from common.storage.db import UserEntity
+from common.storage.db_util import Del
 
 client = boto3.client('apigatewaymanagementapi', endpoint_url=envs.WS_API_GATEWAY_URL)
 
@@ -33,7 +34,8 @@ def send_to_users(message: WsApiBody, user_entities: List[UserEntity], game_id: 
                 )
             except Exception as e:
                 print(e)
-                db.delete_session(connection, user_entity.userId)
+                db.delete_session(connection)
+                db.update_user(user_entity.userId, connections=Del({connection}))
 
 
 def send_game_state(payload: GameStateBroadcastPayload):
