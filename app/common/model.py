@@ -280,6 +280,12 @@ class ShowWinner(SfPayload):
     gameId: str
 
 
+@dataclass
+class EndGame(SfPayload):
+    event: ClassVar[str] = "endGame"
+    gameId: str
+
+
 class ApiError(Exception):
     def __init__(self, message: str):
         self.message = message

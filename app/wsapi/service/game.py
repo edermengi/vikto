@@ -3,9 +3,9 @@ import string
 
 from common.model import NewGameRequest, NewGameResponse, JoinGameRequest, JoinGameResponse, ReadyRequest, \
     ReadyResponse, AnswerRequest, ChooseTopicRequest
-from wsapi.service import sfn
 from common.service import broadcast
 from common.storage import db, util
+from wsapi.service import sfn
 
 
 def random_game_id():
@@ -68,10 +68,10 @@ def choose_topic(req: ChooseTopicRequest):
 
     db.update_player(game_id, user_id, topicVote=topic)
     broadcast.send_players_state(game_id)
-    # players = db.get_active_players(game_id)
-    # all_voted = all([p.topicVote for p in players])
-    # if all_voted:
-    #     game = db.get_game(game_id)
-    #     sfn.send_task_success(game.taskToken)
+    players = db.get_active_players(game_id)
+    all_voted = all([p.topicVote for p in players])
+    if all_voted:
+        game = db.get_game(game_id)
+        sfn.send_task_success(game.taskToken)
 
     return None

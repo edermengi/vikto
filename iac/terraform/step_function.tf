@@ -41,7 +41,7 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
           "Catch" : [
             {
               "ErrorEquals" : ["States.Timeout"],
-              "ResultPath": "$.error",
+              "ResultPath" : "$.error",
               "Next" : "ShowTopic"
             }
           ]
@@ -81,7 +81,7 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
           "Catch" : [
             {
               "ErrorEquals" : ["States.Timeout"],
-              "ResultPath": "$.error",
+              "ResultPath" : "$.error",
               "Next" : "ShowAnswer"
             }
           ]
@@ -127,6 +127,24 @@ resource "aws_sfn_state_machine" "sfn_state_machine" {
             "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
             "Payload" : {
               "event" : "showWinner",
+              "gameId.$" : "$.gameId"
+            }
+          },
+          "ResultPath" : "$.result",
+          "Next" : "WaitBeforeEndGame"
+        },
+        "WaitBeforeEndGame" : {
+          "Type" : "Wait",
+          "Seconds" : 5,
+          "Next" : "EndGame"
+        }
+        "EndGame" : {
+          "Type" : "Task",
+          "Resource" : "arn:aws:states:::lambda:invoke",
+          "Parameters" : {
+            "FunctionName" : aws_lambda_function.flow_lambda_fn.function_name
+            "Payload" : {
+              "event" : "endGame",
               "gameId.$" : "$.gameId"
             }
           },

@@ -23,5 +23,3 @@ def show_winner(payload: ShowWinner):
                    gameState=GameState.SHOW_WINNER)
     log.info(f"Broadcasting results")
     broadcast.send_game_state(game_id)
-    for player in players:
-        db.update_user(player.userId, gameId=None)

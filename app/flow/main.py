@@ -1,8 +1,8 @@
 import logging
 
 from common import log
-from common.model import WaitPlayersReady, AskQuestion, ShowAnswer, AskTopic, ShowTopic, ShowWinner, SfPayload
-from flow.service import wait, question, answer, topic, winner
+from common.model import WaitPlayersReady, AskQuestion, ShowAnswer, AskTopic, ShowTopic, ShowWinner, SfPayload, EndGame
+from flow.service import wait, question, answer, topic, winner, end
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +24,8 @@ def handler(event, _):
         response = answer.show_answer(payload)
     elif isinstance(payload, ShowWinner):
         response = winner.show_winner(payload)
+    elif isinstance(payload, EndGame):
+        response = end.end_game(payload)
     else:
         raise ValueError(f'Unexpected payload: {payload}')
     return response
