@@ -108,7 +108,8 @@ class TypeOneFromSetComposer:
         variants = variants.upper()
 
         all_options = [variant.strip() for variant in re.split('[,;]', variants) if variant]
-        question_item = Random().choice(all_options)
+        question_item = Random().choice(all_options) if self.quiz.answerColumn == self.quiz.questionColumn else row[
+            self.quiz.questionColumn]
         answers = [option for option in all_options if option != question_item]
 
         question = {
